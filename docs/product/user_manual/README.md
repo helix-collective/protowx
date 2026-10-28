@@ -8,8 +8,9 @@ The pages are of four kinds. A **tutorial** is a lesson. A **guide** is
 a task. A **reference** describes one thing exactly. An **explanation**
 says why.
 
-| page                         | kind       | what it covers                                         |
-|------------------------------|------------|--------------------------------------------------------|
-| [changelog.md](changelog.md) | change log | what changed in how you work on the page, newest first |
+| page                                                              | kind       | what it covers                                         |
+|-------------------------------------------------------------------|------------|--------------------------------------------------------|
+| [evaluating-an-expression.md](guides/evaluating-an-expression.md) | guide      | write, evaluate, save and delete a calculation         |
+| [changelog.md](changelog.md)                                      | change log | what changed in how you work on the page, newest first |
 
 The names of the parts on screen are in the [glossary](../../glossary.md).

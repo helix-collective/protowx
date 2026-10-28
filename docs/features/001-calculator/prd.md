@@ -411,6 +411,11 @@ keeps the rule and its exceptions.
   `bff --api=false --bugs ''`; the `connected` project on `bff --api
   --store <tmp> --bugs <tmp>`; the `stack` project, section 8, on
   the compose stack with Jaeger.
+  A scenario's `server` names one server or a list: `crud` and
+  `evaluate` run on `offline` and `connected`, `report` on
+  `connected`. Each server has its own baselines,
+  `<name>.json-snapshots/<server>/<shot>-linux.png`, since the bar
+  names the mode.
 
 ## 5. The dictation
 

@@ -18,8 +18,8 @@ the PRD, the plan, a phase, the scenario, and what each step writes.
 | [product/admin_manual/](product/admin_manual/) | the admin who runs the stack             | a task, a reference, or the change log              |
 | [glossary.md](glossary.md)                     | every reader                             | the names of the parts on screen                    |
 
-One directory comes later. `changes/`, the visual diff that
-`task baselines -- <descr>` writes, comes with the first baselines.
+[changes/](changes/) holds the visual diff that `task baselines --
+<descr>` writes, one directory per change of the baselines.
 [architecture/engine.md](architecture/engine.md) is the engine: the
 grammar to the AST, the AST to the value, the store and its two
 entries.

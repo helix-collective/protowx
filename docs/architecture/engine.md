@@ -127,3 +127,47 @@ gives the rule.
 **The command.** `clis/calc` reads an expression on standard input
 and a binding per `-b`. It calls `ast` and `eval` directly, with no
 store, and writes the value and the printed form.
+
+## 7. The two transports
+
+The page reaches the engine through one of two transports, and nothing
+above the transport knows which. `web/packages/client` holds both.
+
+```
+  App.tsx ──► Engine (engine.ts: list, get, put, delete, parse, evaluate)
+                │
+                ▼
+          TypedEngine ──► LoggingTransport (log.ts) ──► Transport
+                                                          │
+            offline:   WorkerTransport ──postMessage──► worker.ts ──► calcRequest   (calc.wasm)
+            connected: HttpTransport   ──POST /api/calc──► bff ──► engine.HandleJSON
+```
+
+| file              | role                                                              |
+|-------------------|-------------------------------------------------------------------|
+| `factory.ts`      | `createEngine(config, log)`: the one place that picks a transport |
+| `workerEngine.ts` | `WorkerTransport`: an envelope per request, matched by its id     |
+| `worker.ts`       | the Web Worker: loads `calc.wasm`, answers each envelope in order |
+| `http.ts`         | `HttpTransport`: one `POST` per request; `TransportError`         |
+| `direct.ts`       | the engine in the same thread, for the tests under node           |
+| `log.ts`          | `RequestLog`: every message, both modes; a recording taps it      |
+| `engine.ts`       | `TypedEngine`: one method per request; the error branch is thrown |
+| `protocol.ts`     | the ADL JSON bindings of `api.Request` and `api.Response`         |
+
+**The mode.** `readEngineConfig` in `web/apps/app/src/engineConfig.ts`
+reads the URL, then `GET /api/config`. `?offline` is offline, and
+`?api=<url>` is connected to that URL. With neither, `api: true` in
+the config is connected to `/api/calc`. A server with `--api=false`,
+and Vite's dev server, which has no config, are offline.
+
+**The wire.** Both transports carry the same text: an `api.Request`
+as ADL JSON in, an `api.Response` as ADL JSON out. An engine error is
+the `error` branch in both. `TypedEngine` throws it as an
+`EngineError`, with `at` for a parse error. A failure of the
+transport itself, a refused fetch or a status that is not `200`, is a
+`TransportError`, and the page says it on the status line.
+
+**The store.** The worker's engine has the memory store, seeded with
+three calculations, and loses its changes on reload; the offline
+status line says so. The server's engine has the file store under
+`--store`. Section 4 has both.

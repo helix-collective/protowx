@@ -1,0 +1,38 @@
+module model {
+
+import sys.types.Maybe;
+
+/// A calculation's key in the store. A put with an empty id makes one.
+newtype CalculationId = String;
+
+/// The record the page edits: one of each ADL shape a form has to draw.
+struct Calculation {
+    CalculationId id;
+    String name;
+    /// The expression, in calc.ohm's syntax.
+    String text;
+    /// The variables the expression may name.
+    Vector<Binding> bindings = [];
+    /// How the result is shown.
+    Base base = "decimal";
+    Maybe<String> notes = "nothing";
+    Bool starred = false;
+};
+
+struct Binding {
+    String name;
+    Int64 value;
+};
+
+union Base {
+    Void decimal;
+    Void hex;
+    Void binary;
+};
+
+/// Every calculation, in the order they were made.
+struct Store {
+    Vector<Calculation> calculations = [];
+};
+
+};

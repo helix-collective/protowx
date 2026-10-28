@@ -4,9 +4,11 @@ The repo-wide rules are in the root `AGENTS.md`: the writing rules, the
 dev shell, the Go style and the commands. This file covers the Go
 module `engine`.
 
-The hand-written inputs are in `../spec/`. Two generators read them,
-and the hand-written packages here are visitors over the output. The
-`calc:` tasks run in this directory and read `../spec/`.
+[docs/architecture/engine.md](../docs/architecture/engine.md) is the
+map of this module. The hand-written inputs are in `../spec/`. Two
+generators read them, and the hand-written packages here are visitors
+over the output. The `calc:` tasks run in this directory and read
+`../spec/`.
 
 | path                    | what it is                                                    |
 |-------------------------|---------------------------------------------------------------|
@@ -16,8 +18,14 @@ and the hand-written packages here are visitors over the output. The
 | `grammar/calc.wasm`     | generated from `spec/calc.ohm` by `task calc:ohm2wasm`        |
 | `visitor/`              | generated from `spec/calc.ohm` by `task calc:gen_visitor`     |
 | `types/calc/`           | generated from `spec/calc.adl` by `task calc:goadlc`          |
+| `types/model/`          | generated from `spec/model.adl` by `task calc:goadlc`         |
+| `types/api/`            | generated from `spec/api.adl` by `task calc:goadlc`           |
 | `ast/build.go`          | `Parse`, `Build`: the parse tree to `calc.Exp`; `ParseError`  |
 | `ast/printer.go`        | `Print`: a `calc.Exp` as text, fully parenthesised; `OpText`  |
+| `eval/`                 | `Eval`: a `calc.Exp` and the bindings to an `int64`           |
+| `store/`                | `Storage`; `MemoryStore`; `Seed`, the three calculations      |
+| `engine/`               | `New`, `Handle`, `HandleJSON`: one request in, one out        |
+| `wasm/`                 | the `js/wasm` entry: `calcRequest` on the global              |
 | `../spec/ohm-cli/tests` | the grammar's fixtures, run by `task calc:grammar-test`       |
 
 ## Generated directories
@@ -81,3 +89,20 @@ right in each case.
 
 A number past `Int64` matches the grammar, and the builder refuses it
 under `ast.ErrNumber`.
+
+## The engine
+
+- **An `Engine` is not safe for concurrent use.** It holds the store
+  in memory, and the grammar holds its current input. The worker is
+  single-threaded; `bff` holds one mutex around each call.
+- **`Handle` never fails.** Each failure is the `error` branch of
+  `api.Response`. A parse error carries its line and column in `at`;
+  every other error has `at` as `nothing`.
+- **A value crosses as ADL JSON, through the adl-go bindings.**
+  `encoding/json` does not round trip the generated unions. The Go
+  encoder writes a void branch as `{"nothing":null}`; the decoder also
+  reads `"nothing"`.
+- **The engine takes a change only when `Save` succeeds.** A `Save`
+  that fails leaves the engine's list as it was.
+- **An `.adl` default for a `Maybe` is the string `"nothing"`,** and
+  the file imports `sys.types.Maybe`. A bare `nothing` does not parse.

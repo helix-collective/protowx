@@ -1,0 +1,64 @@
+module api {
+
+import model.Calculation;
+import model.CalculationId;
+import model.Binding;
+import calc.Exp;
+import sys.types.Maybe;
+
+/// One request from the page to the engine, in both transports.
+union Request {
+    /// Every calculation in the store.
+    Void list;
+    /// One calculation by id.
+    CalculationId get;
+    /// Create or update: a put with an empty id creates, and the
+    /// response carries the id.
+    Calculation put;
+    /// Forget a calculation.
+    CalculationId delete;
+    /// Parse a text: the AST, or the first error and where it is.
+    String parse;
+    /// Parse and evaluate.
+    EvaluateReq evaluate;
+};
+
+struct EvaluateReq {
+    String text;
+    Vector<Binding> bindings;
+};
+
+/// One response from the engine. An engine error is the error branch.
+union Response {
+    Vector<Calculation> list;
+    Calculation got;
+    Calculation put;
+    CalculationId deleted;
+    ParseResp parsed;
+    EvaluateResp evaluated;
+    Error error;
+};
+
+struct ParseResp {
+    Exp exp;
+    /// The expression fully parenthesised.
+    String printed;
+};
+
+struct EvaluateResp {
+    Int64 value;
+    String printed;
+};
+
+struct Error {
+    String message;
+    /// Where in the text, for a parse error; absent otherwise.
+    Maybe<Position> at;
+};
+
+struct Position {
+    Int32 line;
+    Int32 column;
+};
+
+};

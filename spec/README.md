@@ -7,4 +7,6 @@ writes its output into the directory that uses it, never here.
 |-------------------------|----------------------------------|-------------------------------------|
 | `calc.ohm`              | the grammar of an expression     | `calc:ohm2wasm`, `calc:gen_visitor` |
 | `calc.adl`              | the AST that `engine/ast` builds | `calc:goadlc`, `calc:adl-ts`        |
+| `model.adl`             | the record the page edits        | `calc:goadlc`, `calc:adl-ts`        |
+| `api.adl`               | the protocol, both transports    | `calc:goadlc`, `calc:adl-ts`        |
 | `ohm-cli/tests/*.txtar` | the grammar's fixtures           | `calc:grammar-test`                 |

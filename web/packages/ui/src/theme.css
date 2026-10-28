@@ -1,0 +1,136 @@
+/* The page's look, in one file.
+ *
+ * Every size, colour, face and rule the components draw with is a
+ * custom property declared here. ui.css beside it holds the shapes,
+ * what sits where, and reads these for every value. Changing how the
+ * page looks means changing a value here and nothing else.
+ *
+ * The groups follow docs/glossary.md, which names every part: the bar,
+ * the calculation list, the form, the result and the feedback dialog. A
+ * token is named for the part it paints, so a sentence in the glossary
+ * and a line here say the same thing.
+ *
+ * Text is 4.5 to 1 or more against its fill, WCAG 2.2 AA. A fixed width
+ * on a control is how "Controls stay put" is kept: a label that changes,
+ * such as record and stop, changes no width. web/AGENTS.md has the rule.
+ */
+
+:root {
+  /* ===== The page ===================================================== */
+  --pw-font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pw-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --pw-fg: #111827;
+  --pw-bg: #ffffff;
+  /* Words that are less loud: a hint, a count. 7.6 to 1 on white. */
+  --pw-muted-fg: #4b5563;
+  --pw-rule: 1px solid #d1d5db;
+  --pw-gap: 8px;
+  --pw-pad: 12px;
+  --pw-focus-ring: 2px solid #1d4ed8;
+
+  /* ===== Controls =====================================================
+     A button, an input and a select. Every button of the form has one
+     width, so a click that changes a label moves nothing beside it. */
+  --pw-control-height: 30px;
+  --pw-control-radius: 4px;
+  --pw-control-border: 1px;
+  --pw-control-rule: var(--pw-control-border) solid #6b7280;
+  --pw-button-bg: #ffffff;
+  --pw-button-fg: #111827;
+  --pw-button-hover-bg: #f3f4f6;
+  --pw-button-width: 7em;
+  /* evaluate, save, submit: the action the part is for. 6.7 to 1. */
+  --pw-button-primary-bg: #1d4ed8;
+  --pw-button-primary-fg: #ffffff;
+  /* A disabled control keeps its place and its size; its words fade. */
+  --pw-button-disabled-fg: #6b7280;
+  --pw-button-disabled-bg: #f3f4f6;
+  --pw-input-bg: #ffffff;
+
+  /* ===== The bar ====================================================== */
+  --pw-bar-height: 44px;
+  --pw-bar-bg: #f3f4f6;
+  --pw-bar-rule: 1px solid #d1d5db;
+  /* record, and stop with its count, in one width. */
+  --pw-record-width: 11em;
+  /* While a recording runs. 6.5 to 1. */
+  --pw-record-on-bg: #b91c1c;
+  --pw-record-on-fg: #ffffff;
+  /* The mode: offline or connected. */
+  --pw-mode-width: 6.5em;
+  --pw-mode-fg: #374151;
+
+  /* ===== The status line ============================================== */
+  --pw-status-width: 48em;
+  --pw-status-min-width: 8em;
+  --pw-status-height: 20px;
+  --pw-status-fg: #374151;
+
+  /* ===== The calculation list ========================================= */
+  --pw-list-width: 260px;
+  --pw-list-bg: #f9fafb;
+  --pw-list-rule: 1px solid #d1d5db;
+  --pw-row-height: 32px;
+  --pw-row-fg: #111827;
+  --pw-row-hover-bg: #eef2f7;
+  /* The open row: a fill and a text colour, never a size. 9.7 to 1. */
+  --pw-row-open-bg: #dbeafe;
+  --pw-row-open-fg: #1e3a8a;
+  /* The star column keeps its width with no star in it. */
+  --pw-star-width: 1.4em;
+  --pw-star-fg: #92400e;
+  --pw-store-error-fg: #b91c1c;
+  --pw-store-error-height: 3.2em;
+
+  /* ===== The form ===================================================== */
+  --pw-form-width: 560px;
+  --pw-form-label-width: 6em;
+  --pw-text-font: 15px/1.4 var(--pw-mono);
+  /* One character of the text's face: the parse error's offset unit. */
+  --pw-text-char: 1ch;
+  /* The text's left padding, which the parse error's caret starts at. */
+  --pw-text-pad: 6px;
+  --pw-parse-error-fg: #b91c1c;
+  --pw-parse-error-height: 1.6em;
+  /* The bindings: a fixed height that scrolls, so a new binding moves
+     nothing under the table. */
+  --pw-bindings-height: 140px;
+  --pw-binding-height: 30px;
+  --pw-binding-name-width: 10em;
+  --pw-binding-value-width: 12em;
+  --pw-remove-width: 30px;
+  --pw-base-width: 10em;
+  --pw-notes-height: 5.5em;
+
+  /* ===== The result =================================================== */
+  --pw-result-width: 420px;
+  --pw-result-bg: #ffffff;
+  --pw-result-rule: 1px solid #d1d5db;
+  --pw-value-font: 600 48px/1.2 var(--pw-mono);
+  --pw-value-height: 64px;
+  --pw-value-fg: #111827;
+  --pw-printed-font: 15px/1.4 var(--pw-mono);
+  --pw-printed-fg: #374151;
+  /* One line, there when it is empty, so a printed expression that
+     comes and goes moves nothing. */
+  --pw-printed-min-height: 1.4em;
+  --pw-evaluation-error-font: 600 18px/1.4 system-ui, sans-serif;
+  --pw-evaluation-error-fg: #b91c1c;
+
+  /* ===== The feedback dialog ========================================== */
+  --pw-dialog-width: min(680px, 92vw);
+  --pw-dialog-top: 8vh;
+  --pw-dialog-bg: #ffffff;
+  --pw-dialog-rule: 1px solid #9ca3af;
+  --pw-dialog-radius: 6px;
+  --pw-dialog-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  --pw-dialog-backdrop: rgba(17, 24, 39, 0.35);
+  --pw-dialog-pad: 16px;
+  --pw-dialog-gap: 10px;
+  --pw-dialog-select-width: 28em;
+  --pw-message-height: 8em;
+  --pw-shot-list-height: 92px;
+  --pw-shot-height: 40px;
+  --pw-shot-remove-width: 30px;
+  --pw-failure-fg: #b91c1c;
+}

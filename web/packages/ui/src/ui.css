@@ -1,0 +1,532 @@
+/* The shapes of the page's parts: what sits where. Every size, colour,
+   face and rule is a token of theme.css, read here with var(); this
+   file holds no literal that paints. The sections follow
+   docs/glossary.md. */
+
+/* ===== Controls ======================================================== */
+
+/* Each part sizes its boxes by their borders, whatever the page around
+   it does, so a token is the size on screen. */
+:where(.bar, .calculation-list, .calculation-form, .result, .feedback-dialog),
+:where(.bar, .calculation-list, .calculation-form, .result, .feedback-dialog) * {
+  box-sizing: border-box;
+}
+
+.bar button,
+.calculation-list button,
+.calculation-form button,
+.feedback-dialog button {
+  height: var(--pw-control-height);
+  padding: 0 var(--pw-gap);
+  border: var(--pw-control-rule);
+  border-radius: var(--pw-control-radius);
+  background: var(--pw-button-bg);
+  color: var(--pw-button-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bar button:hover:not(:disabled),
+.calculation-form button:hover:not(:disabled),
+.feedback-dialog button:hover:not(:disabled) {
+  background: var(--pw-button-hover-bg);
+}
+
+button.primary {
+  background: var(--pw-button-primary-bg);
+  color: var(--pw-button-primary-fg);
+  border-color: var(--pw-button-primary-bg);
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--pw-button-primary-bg);
+}
+
+.bar button:disabled,
+.calculation-list button:disabled,
+.calculation-form button:disabled,
+.feedback-dialog button:disabled {
+  color: var(--pw-button-disabled-fg);
+  background: var(--pw-button-disabled-bg);
+  border-color: var(--pw-button-disabled-bg);
+  cursor: default;
+}
+
+.calculation-form input[type='text'],
+.calculation-form select,
+.calculation-form textarea,
+.feedback-dialog input[type='text'],
+.feedback-dialog select,
+.feedback-dialog textarea {
+  height: var(--pw-control-height);
+  padding: 0 var(--pw-text-pad);
+  border: var(--pw-control-rule);
+  border-radius: var(--pw-control-radius);
+  background: var(--pw-input-bg);
+  color: var(--pw-fg);
+  font: inherit;
+}
+
+:is(.bar, .calculation-list, .calculation-form, .feedback-dialog) :is(button, input, select, textarea):focus-visible {
+  outline: var(--pw-focus-ring);
+  outline-offset: 1px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--pw-muted-fg);
+}
+
+/* ===== The bar ========================================================= */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-pad);
+  height: var(--pw-bar-height);
+  padding: 0 var(--pw-pad);
+  background: var(--pw-bar-bg);
+  border-bottom: var(--pw-bar-rule);
+}
+
+.bar .record {
+  flex: none;
+  width: var(--pw-record-width);
+}
+
+.bar .record[aria-pressed='true'] {
+  background: var(--pw-record-on-bg);
+  color: var(--pw-record-on-fg);
+  border-color: var(--pw-record-on-bg);
+}
+
+.bar .mode {
+  flex: none;
+  width: var(--pw-mode-width);
+  color: var(--pw-mode-fg);
+  font-weight: 600;
+}
+
+/* ===== The status line ================================================= */
+
+.status-line {
+  flex: 1 1 var(--pw-status-min-width);
+  max-width: var(--pw-status-width);
+  min-width: var(--pw-status-min-width);
+  height: var(--pw-status-height);
+  line-height: var(--pw-status-height);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--pw-status-fg);
+}
+
+/* ===== The calculation list ============================================ */
+
+.calculation-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--pw-list-bg);
+  border-right: var(--pw-list-rule);
+}
+
+.list-head {
+  flex: none;
+  padding: var(--pw-pad);
+}
+
+.list-head .new {
+  width: var(--pw-button-width);
+}
+
+.calculation-list .rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.calculation-list .row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--pw-row-height);
+  padding: 0 var(--pw-pad);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pw-row-fg);
+  text-align: left;
+}
+
+.calculation-list .row:hover {
+  background: var(--pw-row-hover-bg);
+}
+
+/* The open row: a fill and a text colour, never a size. */
+.calculation-list .row[aria-current='true'] {
+  background: var(--pw-row-open-bg);
+  color: var(--pw-row-open-fg);
+  font-weight: inherit;
+}
+
+.row-star {
+  flex: none;
+  width: var(--pw-star-width);
+  color: var(--pw-star-fg);
+}
+
+.row[aria-current='true'] .row-star {
+  color: var(--pw-row-open-fg);
+}
+
+.row-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.store-error {
+  flex: none;
+  height: var(--pw-store-error-height);
+  margin: 0;
+  padding: 0 var(--pw-pad);
+  overflow: hidden;
+  color: var(--pw-store-error-fg);
+}
+
+/* ===== The form ======================================================== */
+
+.calculation-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-gap);
+  width: var(--pw-form-width);
+  max-width: 100%;
+  padding: var(--pw-pad);
+}
+
+.calculation-form .field {
+  display: grid;
+  grid-template-columns: var(--pw-form-label-width) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--pw-gap);
+}
+
+.calculation-form .field-label {
+  line-height: var(--pw-control-height);
+}
+
+.calculation-form .check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--pw-control-height);
+}
+
+.calculation-form input.text {
+  font: var(--pw-text-font);
+}
+
+/* Under the text, in the text's column, one line high even when it is
+   empty, so nothing under it moves when a parse error comes and goes. */
+.calculation-form .parse-error-row {
+  margin-top: calc(-1 * var(--pw-gap) / 2);
+}
+
+.calculation-form .parse-error {
+  height: var(--pw-parse-error-height);
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--pw-parse-error-fg);
+  font: var(--pw-text-font);
+}
+
+/* The caret under the column the engine names, counted from 1. */
+.parse-error-at {
+  padding-left: calc(var(--pw-control-border) + var(--pw-text-pad) + var(--pw-parse-error-column, 0) * var(--pw-text-char));
+}
+
+.calculation-form .notes textarea {
+  height: var(--pw-notes-height);
+  padding: 4px var(--pw-text-pad);
+  resize: none;
+}
+
+/* A hidden text area keeps its place. */
+.calculation-form .notes textarea.hidden {
+  visibility: hidden;
+}
+
+.calculation-form select.base {
+  width: var(--pw-base-width);
+}
+
+.calculation-form .actions {
+  display: flex;
+  gap: var(--pw-gap);
+  margin-left: calc(var(--pw-form-label-width) + var(--pw-gap));
+}
+
+.calculation-form .actions button {
+  width: var(--pw-button-width);
+}
+
+/* ===== The bindings ==================================================== */
+
+.bindings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-gap);
+}
+
+.bindings-scroll {
+  height: var(--pw-bindings-height);
+  overflow-y: auto;
+  border: var(--pw-rule);
+  border-radius: var(--pw-control-radius);
+}
+
+.bindings table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.bindings .binding-name-col {
+  width: var(--pw-binding-name-width);
+}
+
+.bindings .binding-remove-col {
+  width: var(--pw-remove-width);
+}
+
+.bindings th {
+  height: var(--pw-binding-height);
+  padding: 0 var(--pw-text-pad);
+  text-align: left;
+  font-weight: 600;
+  color: var(--pw-muted-fg);
+}
+
+.bindings td {
+  height: var(--pw-binding-height);
+  padding: 2px;
+}
+
+.bindings td input[type='text'] {
+  width: 100%;
+  height: calc(var(--pw-binding-height) - 4px);
+}
+
+.bindings .remove {
+  width: 100%;
+  height: calc(var(--pw-binding-height) - 4px);
+  padding: 0;
+}
+
+.bindings .add {
+  align-self: flex-start;
+  width: var(--pw-button-width);
+}
+
+/* ===== The result ====================================================== */
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-gap);
+  height: 100%;
+  padding: var(--pw-pad);
+  background: var(--pw-result-bg);
+  border-left: var(--pw-result-rule);
+}
+
+.result .value-slot {
+  height: var(--pw-value-height);
+  overflow: hidden;
+}
+
+.result .value {
+  display: block;
+  font: var(--pw-value-font);
+  color: var(--pw-value-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result .evaluation-error {
+  margin: 0;
+  font: var(--pw-evaluation-error-font);
+  color: var(--pw-evaluation-error-fg);
+}
+
+.result .no-result {
+  margin: 0;
+  color: var(--pw-muted-fg);
+}
+
+.result .printed {
+  min-height: var(--pw-printed-min-height);
+  margin: 0;
+  font: var(--pw-printed-font);
+  color: var(--pw-printed-fg);
+  overflow-wrap: anywhere;
+}
+
+/* ===== The feedback dialog ============================================= */
+
+.feedback-dialog {
+  width: var(--pw-dialog-width);
+  /* At a fixed place from the top, not in the middle: a dialog in the
+     middle moves every control in it when its height changes, as it
+     does when submit turns the actions into the saved view. */
+  margin: var(--pw-dialog-top) auto auto;
+  padding: 0;
+  border: var(--pw-dialog-rule);
+  border-radius: var(--pw-dialog-radius);
+  background: var(--pw-dialog-bg);
+  color: var(--pw-fg);
+  box-shadow: var(--pw-dialog-shadow);
+}
+
+.feedback-dialog::backdrop {
+  background: var(--pw-dialog-backdrop);
+}
+
+.feedback-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pw-dialog-gap);
+  padding: var(--pw-dialog-pad);
+}
+
+.feedback-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pw-gap);
+}
+
+.feedback-head h2 {
+  margin: 0;
+  font-size: 1.15em;
+}
+
+.feedback-field {
+  display: grid;
+  grid-template-columns: var(--pw-form-label-width) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--pw-gap);
+}
+
+.feedback-field > span {
+  line-height: var(--pw-control-height);
+}
+
+.feedback-dialog select.feedback-select {
+  width: var(--pw-dialog-select-width);
+  max-width: 100%;
+}
+
+.feedback-dialog .feedback-field textarea {
+  height: var(--pw-message-height);
+  padding: 4px var(--pw-text-pad);
+  resize: none;
+}
+
+.feedback-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.feedback-shots {
+  display: grid;
+  grid-template-columns: var(--pw-form-label-width) minmax(0, 1fr);
+  gap: var(--pw-gap);
+}
+
+.shot-list {
+  height: var(--pw-shot-list-height);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.shot-row {
+  display: flex;
+  align-items: center;
+  gap: var(--pw-gap);
+  padding: 2px 0;
+}
+
+.shot-row img {
+  height: var(--pw-shot-height);
+  border: var(--pw-rule);
+}
+
+.shot-row .shot-caption {
+  flex: 1 1 auto;
+}
+
+.feedback-dialog .shot-remove {
+  width: var(--pw-shot-remove-width);
+  padding: 0;
+}
+
+.feedback-failure {
+  margin: 0;
+  color: var(--pw-failure-fg);
+}
+
+.feedback-saved p {
+  margin: 0 0 var(--pw-gap);
+  overflow-wrap: anywhere;
+}
+
+.feedback-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--pw-gap);
+}
+
+.feedback-dialog .feedback-copy textarea {
+  padding: 4px var(--pw-text-pad);
+  resize: none;
+  font-family: var(--pw-mono);
+}
+
+.feedback-copy button {
+  width: var(--pw-record-width);
+}
+
+.feedback-copied {
+  height: 1.4em;
+}
+
+.feedback-actions {
+  display: flex;
+  gap: var(--pw-gap);
+}
+
+.feedback-actions button {
+  width: var(--pw-record-width);
+}

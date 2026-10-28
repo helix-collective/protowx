@@ -1,8 +1,8 @@
 // What the configs of the regression suite share: the spec, the
 // baseline path, the threshold, the viewport and the reports.
-// playwright.config.ts is the local config, offline and connected; the
-// stack config of plan phase 6 reads the same. README.md beside this
-// file is the page.
+// playwright.config.ts is the local config, offline and connected;
+// playwright.stack.config.ts, the stack config, reads the same.
+// README.md beside this file is the page.
 
 import type { PlaywrightTestConfig } from '@playwright/test';
 

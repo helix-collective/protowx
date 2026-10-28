@@ -6,6 +6,7 @@ task web:regression -- crud                   # one scenario, by its name
 task web:regression -- crud evaluate          # two scenarios
 task web:regression -- --project connected    # one project
 task web:regression -- --update-snapshots     # take the baselines again
+task web:regression:stack                     # the stack's scenarios, on docker
 task baselines -- <descr>                     # the configs, and the visual diff under docs/changes/
 REGRESSION_URL=http://localhost:5173 task web:regression -- crud   # on task web:dev
 ```
@@ -25,6 +26,7 @@ the `server` field.
 | `scenarios/<name>.json-snapshots/<server>/` | its baselines on one server, `<shot>-linux.png`            |
 | `scenarios.spec.ts`                         | one test per scenario and server, which plays its steps    |
 | `playwright.config.ts`                      | the local config: offline and connected, their servers     |
+| `playwright.stack.config.ts`                | the stack config: the `bff` image of `deploy/compose`      |
 | `base.ts`                                   | what the configs share: viewport, threshold, reports       |
 | `player.mjs`                                | the step player                                            |
 | `visualDiff.mjs`                            | the visual diff that `task baselines` writes               |
@@ -75,8 +77,27 @@ regression/report`, from `web/`.
 and its title starts with `todo:`.
 
 **A `stack` scenario** is listed, and skipped with the task that plays
-it, `task web:regression:stack`. The stack config comes in phase 6 of
-the plan.
+it, `task web:regression:stack`. See "The stack config" below.
+
+### The stack config
+
+`task web:regression:stack` plays the scenarios whose `server` names
+`stack`. Docker must be on the machine. The config's server is `task
+compose:regression-up`: it builds the `bff` image of `deploy/compose`
+and starts `compose.regression.yaml` as the compose project
+`protowx-regression`, with no tailnet. The task stops the stack after
+the run, on green and on red, and the image stays.
+
+| project | `bff`                                     | port   | workers |
+|---------|-------------------------------------------|--------|---------|
+| `stack` | the image: `--api`, `--bugs ''`, no `myw` | `8094` | 1       |
+
+The image builds `dist/` itself, so the task does not build it here.
+The first build is long: the nix shell builds whisper.cpp from source.
+Each run starts a new container, so the file store starts from the
+three seeded calculations. `crud` plays on the stack today. The
+report's trace line joins with the traces and Jaeger.
+`deploy/compose/README.md`, "The regression stack", is the stack.
 
 ### Why `dist/`, and not the dev server
 
@@ -184,7 +205,7 @@ and has its baselines in one directory for each.
 |-------------|--------------------------------------------------------------|
 | `offline`   | the default: `dist/` from `bff --api=false`, the wasm engine |
 | `connected` | `dist/` from `bff --api`, the server's engine and file store |
-| `stack`     | the stack of phase 6: the docker image of `bff`, with Jaeger |
+| `stack`     | the regression stack: the docker image of `bff`, no tailnet  |
 
 Use `offline` when the wasm engine can play the scenario. Use
 `connected` for a part that the offline page does not have, such as a

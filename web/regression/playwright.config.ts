@@ -1,7 +1,7 @@
 // The regression suite's local config: the offline and connected
 // projects, each on a bff that serves dist/ on a fixed loopback port.
 // README.md beside this file is the page; base.ts holds what this config
-// shares with the stack config of plan phase 6.
+// shares with the stack config, playwright.stack.config.ts.
 //
 //   task web:regression                          every scenario
 //   task web:regression -- crud                  one scenario, by its name

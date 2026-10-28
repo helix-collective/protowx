@@ -1,6 +1,6 @@
 {
   "title": "crud: a new calculation saved, opened, renamed and deleted",
-  "server": ["offline", "connected"],
+  "server": ["offline", "connected", "stack"],
   "steps": [
     { "see": "[data-term=row]", "count": 3 },
     { "see": "[data-term=dictate]", "count": 0 },

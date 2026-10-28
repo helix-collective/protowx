@@ -60,6 +60,22 @@ tasks:
         vars:
           CONFIG: regression/playwright.config.ts
 
+  regression:stack:
+    desc: "The regression suite on the docker stack, no tailnet: task web:regression:stack -- [name...] [--update-snapshots]"
+    # The config's webServer builds and starts deploy/compose's
+    # compose.regression.yaml. The stack stops after the run, on green
+    # and on red. The image builds dist/ inside docker, so this task
+    # does not depend on build.
+    preconditions:
+      - sh: command -v docker >/dev/null
+        msg: docker is not in the dev shell; the stack needs it on the machine
+    cmds:
+      - defer:
+          task: :compose:regression-down
+      - task: playwright
+        vars:
+          CONFIG: regression/playwright.stack.config.ts
+
   playwright:
     internal: true
     silent: true

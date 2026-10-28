@@ -11,8 +11,14 @@ the stack and the manuals. Each part of the stack has one real use
 here, so a reader sees how the part is wired and not only that it is
 present.
 
-**Status.** Nothing is built. The repository has its shell, its hooks
-and its tasks, and no code.
+**Status.** The starter is at its first tag, `v0.1.0`. Sections 1 to
+6 are built: the calculator, the model and the protocol, the server,
+the page, the dictation and the feedback report. Section 8, the
+stack, is built without Jaeger, and section 9, the manuals, without
+`traces.md`. Section 7, the traces, waits for the traces: its bullets
+in [plan.md](plan.md) are not ticked, and Jaeger and `traces.md` come
+with them. Features 002 to 006 under `docs/features/` are the todo
+after the tag.
 
 ## Decisions at a glance
 

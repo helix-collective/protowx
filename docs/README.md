@@ -45,6 +45,9 @@ from a local checkout.
 [devtools/compose-tailscale.md](devtools/compose-tailscale.md) runs
 `bff` and `myw` in docker behind one tailnet node: the
 credential, `TS_DOMAIN`, and kernel mode.
+[devtools/fresh-clone.md](devtools/fresh-clone.md) checks that a clone
+of this repository alone builds and passes its gate: the two greps,
+then `task gate`.
 [kb/go-style.md](kb/go-style.md) is the house style for Go.
 
 ## The compass

@@ -8,9 +8,14 @@ new feature takes the next number. The rules for each file are in
 An `x` marks a file that exists. `prd` names each argument in the
 directory; `shots` is `screenshots/`.
 
-| feature          | prd | plan | arch | shots | mockups |
-|------------------|-----|------|------|-------|---------|
-| `001-calculator` | prd |      |      |       |         |
+| feature                  | prd | plan | arch | shots | mockups |
+|--------------------------|-----|------|------|-------|---------|
+| `001-calculator`         | prd | x    |      |       |         |
+| `002-storage`            | prd |      |      |       |         |
+| `003-adl-render`         | prd |      |      |       |         |
+| `004-report-state`       | prd |      |      |       |         |
+| `005-concurrent-editing` | prd |      |      |       |         |
+| `006-replay`             | prd |      |      |       |         |
 
 A new feature gets its row in the commit that creates its directory.
 
@@ -26,6 +31,7 @@ md-tmpl -w docs/features/README.md
 ```
 
 <!--tmpl:echo; repo-tools plan-report -d . -f '^plan.*\.md$' -->
-| feature | open | in progress | done | total | % complete |
-|---------|------|-------------|------|-------|------------|
+| feature                                    | open | in progress | done | total | % complete |
+|--------------------------------------------|------|-------------|------|-------|------------|
+| [001-calculator](./001-calculator/plan.md) | 6    | 3           | 102  | 111   | 92%        |
 <!--/tmpl-->

@@ -7,6 +7,8 @@ for the admin who runs the stack.
 
 ## 2026-10-28
 
+- `v0.1.0`, the first tag: the calculator, the page, the dictation and
+  the stack. The traces follow.
 - The compose stack: the page and the dictation on HTTPS, behind one
   tailnet node.
 - Dictate an expression: My Whisper turns speech into the text.

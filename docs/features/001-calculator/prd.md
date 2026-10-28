@@ -110,7 +110,7 @@ module calc {
 
 union Exp {
     Int64 num;
-    String var;
+    String variable;
     Binary bin;
 };
 

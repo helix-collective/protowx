@@ -1,0 +1,35 @@
+{
+  "Loader": {
+    "Searchdir": [
+      "../spec"
+    ],
+    "MergeAdlext": "adl-go",
+    "BundleMaps": [
+      {
+        "AdlModuleNamePrefix": "sys",
+        "GoModPath": "github.com/adl-lang/adl-go/adl",
+        "AdlSrc": "file://$ADLSTDLIB"
+      }
+    ],
+    "Files": [
+      "../spec/*.adl"
+    ]
+  },
+  "Mod": {
+    "Outputdir": "."
+  },
+  "GoTypes": {
+    "NoGoFmt": false,
+    "GoAdlPath": "github.com/adl-lang/adl-go/adl",
+    "ExcludeAst": false,
+    "StdLibGen": true,
+    "Outputdir": "types"
+  },
+  "GoApis": null,
+  "GoVisitor": {
+    "GoAdlPath": "github.com/adl-lang/adl-go/adl",
+    "Modules": [],
+    "SkipTypeCheckMethod": false,
+    "Outputdir": "types"
+  }
+}

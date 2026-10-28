@@ -1,0 +1,455 @@
+The grammar's fixtures for calc.ohm: the cases of ohm-go's
+examples/generic-methods, and one input per operator.
+
+The inputs:
+
+s1: a number: 42
+s2: an identifier: x
+s3: times binds tighter than plus: 1 + 2 * 3
+s4: parentheses override it: (1 + 2) * 3
+s5: minus associates to the left: 10 - 4 - 3
+s6: divide associates to the left: 8 / 2 / 2
+s7: identifiers and numbers mixed: x * 2 + y
+s8: nested parentheses: ((x))
+s9: identifiers with digits: a1 / (b2 * 3)
+s10: plus: 1 + 2
+s11: minus: 5 - 2
+s12: times: 3 * 4
+s13: divide: 10 / 2
+s14: the case of the PRD, section 5.3: (x + 3) * y - 10 / 2
+e1: an operator with no right operand: 1 +
+e2: a parenthesis that is not closed: (1 + 2
+
+The expectations of s1 to s14 are candp's verbose parse trees without
+terminals, builtins and lists (.t.l.b.v). e1 and e2 do not parse; each
+expectation is the error message. docs/devtools/grammar-tests.md says
+how to renew one.
+
+-- @../../calc.ohm --
+-- s1.txt --
+42
+-- s1.t.l.b.v.c_and_p --
+(Exp 0-2 '42'
+  (AddExp 0-2 '42'
+    (MulExp 0-2 '42'
+      (PriExp 0-2 '42'
+        (number 0-2 '42'
+        )
+      )
+    )
+  )
+)
+-- s2.txt --
+x
+-- s2.t.l.b.v.c_and_p --
+(Exp 0-1 'x'
+  (AddExp 0-1 'x'
+    (MulExp 0-1 'x'
+      (PriExp 0-1 'x'
+        (ident 0-1 'x'
+        )
+      )
+    )
+  )
+)
+-- s3.txt --
+1 + 2 * 3
+-- s3.t.l.b.v.c_and_p --
+(Exp 0-9 '1 + 2 * 3'
+  (AddExp 0-9 '1 + 2 * 3'
+    (AddExp_plus 0-9 '1 + 2 * 3'
+      (AddExp 0-1 '1'
+        (MulExp 0-1 '1'
+          (PriExp 0-1 '1'
+            (number 0-1 '1'
+            )
+          )
+        )
+      )
+      (MulExp 4-9 '2 * 3'
+        (MulExp_times 4-9 '2 * 3'
+          (MulExp 4-5 '2'
+            (PriExp 4-5 '2'
+              (number 4-5 '2'
+              )
+            )
+          )
+          (PriExp 8-9 '3'
+            (number 8-9 '3'
+            )
+          )
+        )
+      )
+    )
+  )
+)
+-- s4.txt --
+(1 + 2) * 3
+-- s4.t.l.b.v.c_and_p --
+(Exp 0-11 'OP1 + 2CP * 3'
+  (AddExp 0-11 'OP1 + 2CP * 3'
+    (MulExp 0-11 'OP1 + 2CP * 3'
+      (MulExp_times 0-11 'OP1 + 2CP * 3'
+        (MulExp 0-7 'OP1 + 2CP'
+          (PriExp 0-7 'OP1 + 2CP'
+            (PriExp_paren 0-7 'OP1 + 2CP'
+              (Exp 1-6 '1 + 2'
+                (AddExp 1-6 '1 + 2'
+                  (AddExp_plus 1-6 '1 + 2'
+                    (AddExp 1-2 '1'
+                      (MulExp 1-2 '1'
+                        (PriExp 1-2 '1'
+                          (number 1-2 '1'
+                          )
+                        )
+                      )
+                    )
+                    (MulExp 5-6 '2'
+                      (PriExp 5-6 '2'
+                        (number 5-6 '2'
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+        (PriExp 10-11 '3'
+          (number 10-11 '3'
+          )
+        )
+      )
+    )
+  )
+)
+-- s5.txt --
+10 - 4 - 3
+-- s5.t.l.b.v.c_and_p --
+(Exp 0-10 '10 - 4 - 3'
+  (AddExp 0-10 '10 - 4 - 3'
+    (AddExp_minus 0-10 '10 - 4 - 3'
+      (AddExp 0-6 '10 - 4'
+        (AddExp_minus 0-6 '10 - 4'
+          (AddExp 0-2 '10'
+            (MulExp 0-2 '10'
+              (PriExp 0-2 '10'
+                (number 0-2 '10'
+                )
+              )
+            )
+          )
+          (MulExp 5-6 '4'
+            (PriExp 5-6 '4'
+              (number 5-6 '4'
+              )
+            )
+          )
+        )
+      )
+      (MulExp 9-10 '3'
+        (PriExp 9-10 '3'
+          (number 9-10 '3'
+          )
+        )
+      )
+    )
+  )
+)
+-- s6.txt --
+8 / 2 / 2
+-- s6.t.l.b.v.c_and_p --
+(Exp 0-9 '8 / 2 / 2'
+  (AddExp 0-9 '8 / 2 / 2'
+    (MulExp 0-9 '8 / 2 / 2'
+      (MulExp_divide 0-9 '8 / 2 / 2'
+        (MulExp 0-5 '8 / 2'
+          (MulExp_divide 0-5 '8 / 2'
+            (MulExp 0-1 '8'
+              (PriExp 0-1 '8'
+                (number 0-1 '8'
+                )
+              )
+            )
+            (PriExp 4-5 '2'
+              (number 4-5 '2'
+              )
+            )
+          )
+        )
+        (PriExp 8-9 '2'
+          (number 8-9 '2'
+          )
+        )
+      )
+    )
+  )
+)
+-- s7.txt --
+x * 2 + y
+-- s7.t.l.b.v.c_and_p --
+(Exp 0-9 'x * 2 + y'
+  (AddExp 0-9 'x * 2 + y'
+    (AddExp_plus 0-9 'x * 2 + y'
+      (AddExp 0-5 'x * 2'
+        (MulExp 0-5 'x * 2'
+          (MulExp_times 0-5 'x * 2'
+            (MulExp 0-1 'x'
+              (PriExp 0-1 'x'
+                (ident 0-1 'x'
+                )
+              )
+            )
+            (PriExp 4-5 '2'
+              (number 4-5 '2'
+              )
+            )
+          )
+        )
+      )
+      (MulExp 8-9 'y'
+        (PriExp 8-9 'y'
+          (ident 8-9 'y'
+          )
+        )
+      )
+    )
+  )
+)
+-- s8.txt --
+((x))
+-- s8.t.l.b.v.c_and_p --
+(Exp 0-5 'OPOPxCPCP'
+  (AddExp 0-5 'OPOPxCPCP'
+    (MulExp 0-5 'OPOPxCPCP'
+      (PriExp 0-5 'OPOPxCPCP'
+        (PriExp_paren 0-5 'OPOPxCPCP'
+          (Exp 1-4 'OPxCP'
+            (AddExp 1-4 'OPxCP'
+              (MulExp 1-4 'OPxCP'
+                (PriExp 1-4 'OPxCP'
+                  (PriExp_paren 1-4 'OPxCP'
+                    (Exp 2-3 'x'
+                      (AddExp 2-3 'x'
+                        (MulExp 2-3 'x'
+                          (PriExp 2-3 'x'
+                            (ident 2-3 'x'
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+-- s9.txt --
+a1 / (b2 * 3)
+-- s9.t.l.b.v.c_and_p --
+(Exp 0-13 'a1 / OPb2 * 3CP'
+  (AddExp 0-13 'a1 / OPb2 * 3CP'
+    (MulExp 0-13 'a1 / OPb2 * 3CP'
+      (MulExp_divide 0-13 'a1 / OPb2 * 3CP'
+        (MulExp 0-2 'a1'
+          (PriExp 0-2 'a1'
+            (ident 0-2 'a1'
+            )
+          )
+        )
+        (PriExp 5-13 'OPb2 * 3CP'
+          (PriExp_paren 5-13 'OPb2 * 3CP'
+            (Exp 6-12 'b2 * 3'
+              (AddExp 6-12 'b2 * 3'
+                (MulExp 6-12 'b2 * 3'
+                  (MulExp_times 6-12 'b2 * 3'
+                    (MulExp 6-8 'b2'
+                      (PriExp 6-8 'b2'
+                        (ident 6-8 'b2'
+                        )
+                      )
+                    )
+                    (PriExp 11-12 '3'
+                      (number 11-12 '3'
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+-- s10.txt --
+1 + 2
+-- s10.t.l.b.v.c_and_p --
+(Exp 0-5 '1 + 2'
+  (AddExp 0-5 '1 + 2'
+    (AddExp_plus 0-5 '1 + 2'
+      (AddExp 0-1 '1'
+        (MulExp 0-1 '1'
+          (PriExp 0-1 '1'
+            (number 0-1 '1'
+            )
+          )
+        )
+      )
+      (MulExp 4-5 '2'
+        (PriExp 4-5 '2'
+          (number 4-5 '2'
+          )
+        )
+      )
+    )
+  )
+)
+-- s11.txt --
+5 - 2
+-- s11.t.l.b.v.c_and_p --
+(Exp 0-5 '5 - 2'
+  (AddExp 0-5 '5 - 2'
+    (AddExp_minus 0-5 '5 - 2'
+      (AddExp 0-1 '5'
+        (MulExp 0-1 '5'
+          (PriExp 0-1 '5'
+            (number 0-1 '5'
+            )
+          )
+        )
+      )
+      (MulExp 4-5 '2'
+        (PriExp 4-5 '2'
+          (number 4-5 '2'
+          )
+        )
+      )
+    )
+  )
+)
+-- s12.txt --
+3 * 4
+-- s12.t.l.b.v.c_and_p --
+(Exp 0-5 '3 * 4'
+  (AddExp 0-5 '3 * 4'
+    (MulExp 0-5 '3 * 4'
+      (MulExp_times 0-5 '3 * 4'
+        (MulExp 0-1 '3'
+          (PriExp 0-1 '3'
+            (number 0-1 '3'
+            )
+          )
+        )
+        (PriExp 4-5 '4'
+          (number 4-5 '4'
+          )
+        )
+      )
+    )
+  )
+)
+-- s13.txt --
+10 / 2
+-- s13.t.l.b.v.c_and_p --
+(Exp 0-6 '10 / 2'
+  (AddExp 0-6 '10 / 2'
+    (MulExp 0-6 '10 / 2'
+      (MulExp_divide 0-6 '10 / 2'
+        (MulExp 0-2 '10'
+          (PriExp 0-2 '10'
+            (number 0-2 '10'
+            )
+          )
+        )
+        (PriExp 5-6 '2'
+          (number 5-6 '2'
+          )
+        )
+      )
+    )
+  )
+)
+-- s14.txt --
+(x + 3) * y - 10 / 2
+-- s14.t.l.b.v.c_and_p --
+(Exp 0-20 'OPx + 3CP * y - 10 / 2'
+  (AddExp 0-20 'OPx + 3CP * y - 10 / 2'
+    (AddExp_minus 0-20 'OPx + 3CP * y - 10 / 2'
+      (AddExp 0-11 'OPx + 3CP * y'
+        (MulExp 0-11 'OPx + 3CP * y'
+          (MulExp_times 0-11 'OPx + 3CP * y'
+            (MulExp 0-7 'OPx + 3CP'
+              (PriExp 0-7 'OPx + 3CP'
+                (PriExp_paren 0-7 'OPx + 3CP'
+                  (Exp 1-6 'x + 3'
+                    (AddExp 1-6 'x + 3'
+                      (AddExp_plus 1-6 'x + 3'
+                        (AddExp 1-2 'x'
+                          (MulExp 1-2 'x'
+                            (PriExp 1-2 'x'
+                              (ident 1-2 'x'
+                              )
+                            )
+                          )
+                        )
+                        (MulExp 5-6 '3'
+                          (PriExp 5-6 '3'
+                            (number 5-6 '3'
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+            (PriExp 10-11 'y'
+              (ident 10-11 'y'
+              )
+            )
+          )
+        )
+      )
+      (MulExp 14-20 '10 / 2'
+        (MulExp_divide 14-20 '10 / 2'
+          (MulExp 14-16 '10'
+            (PriExp 14-16 '10'
+              (number 14-16 '10'
+              )
+            )
+          )
+          (PriExp 19-20 '2'
+            (number 19-20 '2'
+            )
+          )
+        )
+      )
+    )
+  )
+)
+-- e1.txt --
+1 +
+-- e1.N.error --
+Line 1, col 4:
+> 1 | 1 +
+         ^
+Expected "(", an identifier, or a number
+-- e1.N.s.error --
+Line 1, col 4: expected "(", an identifier, or a number
+-- e2.txt --
+(1 + 2
+-- e2.N.error --
+Line 1, col 7:
+> 1 | (1 + 2
+            ^
+-- e2.N.s.error --
+Line 1, col 7: match failed

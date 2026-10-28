@@ -21,14 +21,15 @@ does. The `calc:` tasks run in `engine/` and read `../spec/`.
 
 | to                                     | do                                                  |
 |----------------------------------------|-----------------------------------------------------|
-| bump the pin to `ohm-go` main          | `task nix:update-ohm-cli`, then commit `flake.*`    |
+| bump the pin to a newer `ohm-go` tag   | the `ref` in `flake.nix`, `task nix:update-ohm-cli` |
 | run an `ohm-cli` from a local checkout | set `OHM_GO_DEV` in `.envrc.local`, `direnv reload` |
 
-**The pinned `ohm-cli` is older than the task needs.** The task runs
-with `--strict`, and `ohm-cli` keeps one compile per run. Both come with
-`ohm-go` 9286319, the commit that the workspace pins. The flake pins
-d905d0e, which is older. Run the task with `OHM_GO_DEV=../ohm-go`, or
-move the pin with `task nix:update-ohm-cli`.
+**The flake pins `ohm-cli` at the tag `ohm-cli/v1.1.0`, `39a1186`.** The
+task runs with `--strict`, and the fixtures have `error` members. Both
+need that tag or later. The `main` of `ohm-go` is older, so the flake's
+input names the tag. The workspace pins the same commit, and
+`engine/go.mod` requires `ohm` and `ohm-cli` `v1.1.0`. The task
+refuses an `ohm-cli` with no `--strict`, and names the fix.
 
 [nix-custom-dev-tools.md](nix-custom-dev-tools.md) section 8 has the
 local checkout.
@@ -60,9 +61,9 @@ A txtar file: free text, then files, each under a `-- name --` line.
   there, one line each, since a `.txt` cannot hold a comment.
 - `name.<flags>.error` is the message that an input that must not
   parse gives: the line and column, the line with a caret, and the
-  expected text when the runtime has it. The pinned `ohm-cli` has no
-  `error` kind and skips the member. A newer `ohm-cli`, from
-  `OHM_GO_DEV`, checks it, once its checkout has the kind.
+  expected text when the runtime has it. Two flags go before `error`:
+  `N` drops the newline that ends the `.txt`, and `s` asks for the
+  one-line message, which `ast.ParseError` holds.
 
 In a verbose tree the source text is encoded: `(` is `OP`, `)` is `CP`
 and `{` is `OC`.
@@ -96,5 +97,11 @@ fixture.
 
 ## Experiences
 
-None in this repository yet. Add one, with a date and a name, when the
-runner surprises you.
+Add one, with a date and a name, when the runner surprises you.
+
+- **2026-10-28, `match failed` with no expected tokens.** The fixture
+  `e2`, `(1 + 2`, gives `Line 1, col 7: match failed`, not a list of
+  the tokens that could come next. `ohm` 1.1.0 overflows the wasm stack
+  in `recordFailures` after a complete operand, so it has no list. The
+  line and the column are right. The fixture holds the message as it
+  is; renew it when `ohm-go` fixes the overflow.

@@ -2,5 +2,81 @@
 
 version: '3'
 
-# Empty until its phase of docs/features/001-calculator/plan.md fills it.
-tasks: {}
+# The calc: tasks run in engine/. Each reads the hand-written inputs in
+# ../spec/ and writes its output into the module that uses it, never
+# into spec/.
+vars:
+  SPEC_DIR: ../spec
+  CLIENT_DIR: ../web/packages/client
+
+tasks:
+
+  goadlc:
+    desc: Regenerate types/ from the .adl files in spec/
+    cmds:
+      - go tool github.com/adl-lang/adl-go/goadlc -cfg adl.cfg.json
+
+  adl-ts:
+    desc: Regenerate the TypeScript types in web/packages/client/src/adl from the .adl files in spec/
+    cmds:
+      - rm -rf {{.CLIENT_DIR}}/src/adl
+      - |
+        adlc typescript \
+          --generate-transitive \
+          --include-rt --include-resolver \
+          --ts-style tsc \
+          -I {{.SPEC_DIR}} \
+          -O {{.CLIENT_DIR}}/src/adl \
+          -R runtime \
+          $(cd {{.SPEC_DIR}} && ls *.adl)
+
+  wasm:
+    desc: Build the js/wasm engine into web/packages/client/wasm with the Go glue beside it
+    deps: [goadlc]
+    cmds:
+      - mkdir -p {{.CLIENT_DIR}}/wasm
+      - GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o {{.CLIENT_DIR}}/wasm/calc.wasm ./wasm
+      - cp -f "$(go env GOROOT)/lib/wasm/wasm_exec.js" {{.CLIENT_DIR}}/wasm/wasm_exec.js
+
+  ohm2wasm:
+    desc: Compile spec/calc.ohm to engine/grammar/calc.wasm (needs docker)
+    cmds:
+      # The image writes calc.wasm into the mounted directory, beside the
+      # calc.ohm it compiled. go:embed reads inside its module only, so
+      # the file moves to package grammar.
+      - docker run --rm -v "$(cd {{.SPEC_DIR}} && pwd):/local" ohmjs/ohm:18.0.0-beta.15 compile calc.ohm
+      - mv -f {{.SPEC_DIR}}/calc.wasm grammar/calc.wasm
+
+  gen_visitor:
+    desc: Regenerate visitor/ from spec/calc.ohm
+    cmds:
+      - |
+        go tool github.com/ohmjs/ohm-go/ohm-cli generate go \
+          --go-type-package visitor \
+          --output-dir visitor \
+          --generic-methods \
+          @{{.SPEC_DIR}}/calc.ohm
+
+  test:
+    desc: Go tests and vet
+    cmds:
+      - go test ./...
+      - go vet ./...
+
+  grammar-test:
+    desc: "The grammar's fixtures: ohm-cli test txtar over spec/ohm-cli/tests (needs docker)"
+    # The runner insists on a directory named ohm-cli, with tests/
+    # under it, and reads the @../../calc.ohm of each fixture from
+    # there. docs/devtools/grammar-tests.md is the page.
+    # --strict fails the run on an input that does not parse. An
+    # ohm-cli older than ohm-go 9286319 has no --strict, so the task
+    # refuses such a runner and names the fix.
+    dir: '{{.SPEC_DIR}}/ohm-cli'
+    cmds:
+      - |
+        if ! ohm-cli test txtar --help 2>&1 | grep -q -- --strict; then
+          echo "grammar-test: this ohm-cli has no --strict."
+          echo "Run task nix:update-ohm-cli, or set OHM_GO_DEV in .envrc.local; docs/devtools/grammar-tests.md."
+          exit 1
+        fi
+        ohm-cli test txtar --strict tests/*.txtar

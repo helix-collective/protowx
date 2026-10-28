@@ -1,0 +1,22 @@
+module calc {
+
+union Exp {
+    Int64 num;
+    String variable;
+    Binary bin;
+};
+
+struct Binary {
+    Op op;
+    Exp left;
+    Exp right;
+};
+
+union Op {
+    Void plus;
+    Void minus;
+    Void times;
+    Void divide;
+};
+
+};

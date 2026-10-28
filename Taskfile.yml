@@ -14,8 +14,8 @@ includes:
   calc:
     taskfile: ./engine/Taskfile.calc.yml
     dir: ./engine
-  # The compose stack: bff, myw and Jaeger behind one tailnet node; see
-  # deploy/compose/README.md.
+  # The compose stack: bff and myw behind one tailnet node, and the
+  # regression stack without one; see deploy/compose/README.md.
   compose:
     taskfile: ./deploy/compose/Taskfile.compose.yml
     dir: ./deploy/compose
@@ -140,8 +140,7 @@ tasks:
         run web:typecheck task web:typecheck
         run test task test
         run web:regression task web:regression
-        # The stack step joins with the stack, in phase 6 of the plan:
-        # run web:regression:stack stack
+        run web:regression:stack stack
         run md-table-fmt tables
         run plan-report plan_table
         step="clean tree"
@@ -278,6 +277,6 @@ tasks:
         echo "$descr" | grep -Eqx '[a-z0-9]+(-[a-z0-9]+)*' || no "give a kebab-case description: task baselines -- <descr> [name...]"
         shift
         task web:regression -- "$@" --update-snapshots
-        # The stack's suite joins in phase 6 of the plan:
-        # task web:regression:stack -- "$@" --update-snapshots
+        # --pass-with-no-tests: a name that only the local config plays.
+        task web:regression:stack -- "$@" --update-snapshots --pass-with-no-tests
         cd web && node regression/visualDiff.mjs "$descr"

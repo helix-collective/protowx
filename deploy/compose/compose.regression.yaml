@@ -1,0 +1,42 @@
+# The regression stack: the bff image of compose.yaml, with no tailnet,
+# for the stack project of the regression suite. README.md beside this
+# file, "The regression stack", is how to run it.
+#
+# Run it through task compose:regression-up, as the project
+# protowx-regression, and stop it with task compose:regression-down.
+# task web:regression:stack does both.
+#
+# No ts service, no network_mode, no user and no TS_ variable. bff
+# publishes one port, on the host's loopback only. The port and the
+# project name are fixed, so run one regression stack at a time on a
+# machine.
+#
+# No myw: the dictation's transcript differs on each run. The trace
+# viewer, Jaeger, joins with the traces, and then the report scenario
+# checks its trace line here.
+
+# The same build as compose.yaml's x-build. YAML anchors do not cross
+# files, so this is a copy; task compose:check fails when the two differ.
+x-build: &build
+  context: ../..
+  dockerfile: deploy/compose/Dockerfile
+
+services:
+  bff:
+    build:
+      <<: *build
+      target: bff
+    image: protowx-regression-bff
+    # The engine API stays on, the default. No feedback report route and
+    # no transcription service, so the page has no dictate button, the
+    # same on each run. Each run is a new container, so the file store
+    # starts from the three seeded calculations.
+    command:
+      - --addr
+      - 0.0.0.0:8080
+      - --bugs
+      - ""
+      - --myw-url
+      - ""
+    ports:
+      - 127.0.0.1:8094:8080

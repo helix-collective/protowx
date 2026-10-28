@@ -1,0 +1,18 @@
+# The build context is the repository root. Keep out what the build
+# makes again, what is large, and what is secret.
+**/.git
+**/node_modules
+.envrc.local
+.direnv
+.claude/worktrees
+.prompt-history
+.prompts
+.bugreports
+calculations.json
+web/apps/app/dist
+web/packages/client/wasm
+web/regression/results
+web/regression/report
+services/bff/bff
+services/myw/myw
+services/myw/source/model/*.bin

@@ -1,0 +1,91 @@
+# The compose stack: bff and My Whisper, myw, behind one tailnet node,
+# ts. README.md beside this file is how to run it.
+#
+# Run it through task compose:up, which names the project and the node
+# after the branch, as PROTOWX_NODE. TS_AUTHKEY and TS_DOMAIN come from
+# .envrc.local.
+#
+# No service publishes a port. ts is the stack's only network: the other
+# two share its namespace and listen on its loopback, and Tailscale
+# Serve, in ts, routes the tailnet to bff and to myw. task compose:check
+# fails on a `ports` entry.
+#
+# The trace viewer, Jaeger on :8445, joins with the traces. Until then
+# the stack has no viewer, and bff has no --otlp-url.
+
+x-build: &build
+  context: ../..
+  dockerfile: deploy/compose/Dockerfile
+
+services:
+  ts:
+    image: tailscale/tailscale:v1.104.1
+    hostname: ${PROTOWX_NODE:?run the stack through task compose:up, which sets PROTOWX_NODE}
+    environment:
+      # Read at the first start only; the node's identity is then in
+      # ts-state.
+      TS_AUTHKEY: ${TS_AUTHKEY:-}
+      TS_HOSTNAME: ${PROTOWX_NODE:?run the stack through task compose:up, which sets PROTOWX_NODE}
+      TS_STATE_DIR: /var/lib/tailscale
+      # Kernel mode: a tailnet connection arrives on tailscale0, and a
+      # socket bound to 127.0.0.1 never takes it. In userspace mode
+      # tailscaled dials the same port on loopback, and bff and myw
+      # would answer on the tailnet past Serve.
+      TS_USERSPACE: "false"
+      TS_SERVE_CONFIG: /config/serve.json
+      TS_EXTRA_ARGS: ${TS_EXTRA_ARGS:-}
+    volumes:
+      - ts-state:/var/lib/tailscale
+      - ./serve.json:/config/serve.json:ro
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  bff:
+    build:
+      <<: *build
+      target: bff
+    network_mode: service:ts
+    depends_on:
+      - ts
+    # The engine API stays on: the stack is one person's, on their own
+    # tailnet. The host's uid and gid, from task compose:up, so a
+    # feedback report in .bugreports belongs to that person and not to
+    # root. The image's entrypoint names --dir and --store.
+    user: ${PROTOWX_UID:?run the stack through task compose:up}:${PROTOWX_GID:?run the stack through task compose:up}
+    command:
+      - --addr
+      - 127.0.0.1:8080
+      - --bugs
+      - /repo/.bugreports
+      - --myw-url
+      - https://${PROTOWX_NODE:?run the stack through task compose:up}.${TS_DOMAIN:?set TS_DOMAIN in .envrc.local, the tailnet domain, e.g. tail1234.ts.net}:8443
+    # The repository's .bugreports, so a report sent to the stack lands
+    # beside the ones task bff:connected writes. The calculations are
+    # in the volume store, so they outlive the container.
+    volumes:
+      - ../../.bugreports:/repo/.bugreports
+      - store:/app/store
+    restart: unless-stopped
+
+  myw:
+    build:
+      <<: *build
+      target: myw
+    network_mode: service:ts
+    depends_on:
+      - ts
+    # The page's origin, so CORS lets the dictation in; its default list
+    # is bff's loopback origins alone.
+    command:
+      - --addr
+      - 127.0.0.1:8090
+      - --origin
+      - https://${PROTOWX_NODE:?run the stack through task compose:up}.${TS_DOMAIN:?set TS_DOMAIN in .envrc.local, the tailnet domain, e.g. tail1234.ts.net}
+    restart: unless-stopped
+
+volumes:
+  ts-state:
+  store:

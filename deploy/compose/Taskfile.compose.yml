@@ -1,6 +1,179 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
+#
+# The compose stack: bff and My Whisper, myw, behind one tailnet node.
+# See README.md. Docker is not in the dev shell; these tasks need it on
+# the machine. TS_AUTHKEY and TS_DOMAIN come from .envrc.local. The
+# trace viewer, Jaeger, joins with the traces.
 
 version: '3'
 
-# Empty until its phase of docs/features/001-calculator/plan.md fills it.
-tasks: {}
+vars:
+  # The branch made a hostname: lower case, each run outside [a-z0-9]
+  # one hyphen, at most 63 long. The compose project and the node are
+  # both protowx-<branch>, so two worktrees run two stacks side by side.
+  BRANCH:
+    sh: git branch --show-current | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+  # bff runs as the host's user, so its feedback reports in .bugreports
+  # are that person's to read and delete.
+  UID:
+    sh: id -u
+  GID:
+    sh: id -g
+  # The free space, in GB, that the build needs on Docker's disk. Below
+  # it, Nix fails part way with "No space left on device" and blames the
+  # substituter. task compose:up MIN_FREE_GB=4 lowers it.
+  MIN_FREE_GB: '{{.MIN_FREE_GB | default 6}}'
+  NODE: '{{if .BRANCH}}{{printf "protowx-%s" .BRANCH | trunc 63 | trimSuffix "-"}}{{else}}protowx{{end}}'
+  # The regression stack's project and port; compose.regression.yaml
+  # publishes the port, and web/regression/playwright.stack.config.ts
+  # plays against it.
+  REGRESSION_PROJECT: protowx-regression
+  REGRESSION_PORT: '8094'
+
+env:
+  PROTOWX_NODE: '{{.NODE}}'
+  COMPOSE_PROJECT_NAME: '{{.NODE}}'
+  PROTOWX_UID: '{{.UID}}'
+  PROTOWX_GID: '{{.GID}}'
+
+tasks:
+  up:
+    desc: "Build the images and start the stack as the tailnet node protowx-<branch>; needs TS_AUTHKEY and TS_DOMAIN"
+    cmds:
+      - task: disk
+      # Docker makes a missing bind-mount source as root, and bff, as
+      # the host's user, then fails each report with a 500. A worktree
+      # has no .bugreports, as git ignores it, so make it here.
+      - mkdir -p ../../.bugreports
+      - 'test -w ../../.bugreports || { echo ".bugreports is not writable by uid {{.UID}}: sudo chown {{.UID}}:{{.GID}} .bugreports" >&2; exit 1; }'
+      - docker compose up --build --detach {{.CLI_ARGS}}
+      - 'echo "the page: https://{{.NODE}}.${TS_DOMAIN}/"'
+
+  build:
+    desc: Build the two images, bff and myw, and start nothing
+    env:
+      # Compose reads the whole file to build, and the flags need a
+      # domain; no image holds it.
+      TS_DOMAIN: '{{.TS_DOMAIN | default "build.invalid"}}'
+    cmds:
+      - task: disk
+      - docker compose build {{.CLI_ARGS}}
+
+  disk:
+    internal: true
+    silent: true
+    vars:
+      ROOT:
+        sh: docker info --format '{{`{{.DockerRootDir}}`}}'
+    cmds:
+      # Docker Desktop's root is in its VM, not on this machine, so there
+      # is no disk here to read; the check passes.
+      - |
+        [ -d '{{.ROOT}}' ] || exit 0
+        free=$(df -Pk '{{.ROOT}}' | awk 'NR == 2 { print int($4 / 1048576) }')
+        if [ "$free" -lt {{.MIN_FREE_GB}} ]; then
+          echo "{{.ROOT}} has ${free} GB free; the build needs {{.MIN_FREE_GB}}." >&2
+          echo "'docker system df' shows the use; 'docker builder prune' frees the build cache;" >&2
+          echo "'task compose:prune' deletes the images no container uses." >&2
+          exit 1
+        fi
+
+  down:
+    desc: Stop the stack; the node's state and the calculations, in their volumes, and the reports, in .bugreports, stay
+    cmds:
+      - docker compose down {{.CLI_ARGS}}
+
+  prune:
+    desc: "Delete every Docker image that no container uses, on the whole machine; task compose:prune -- -f skips the prompt"
+    # docker image prune -a, not only dangling images: an old build of
+    # the stack is tagged, and only -a takes it. It takes base images
+    # too, such as ohmjs/ohm for calc:ohm2wasm, and the next build pulls
+    # them again. Docker asks y/N first.
+    cmds:
+      - docker image prune -a {{.CLI_ARGS}}
+
+  regression-up:
+    desc: "Build and start the regression stack, protowx-regression: bff on 127.0.0.1:8094; no tailnet"
+    # compose.regression.yaml is the file; task web:regression:stack runs
+    # this task through Playwright and regression-down after. Each TS_
+    # variable is unset first, so the build and the start show that the
+    # stack needs no tailnet credential.
+    cmds:
+      - task: disk
+      - |
+        for v in $(env | sed -n 's/^\(TS_[A-Za-z0-9_]*\)=.*/\1/p'); do unset "$v"; done
+        docker compose -p {{.REGRESSION_PROJECT}} -f compose.regression.yaml up --build --wait {{.CLI_ARGS}}
+      # --wait returns when the container runs; a scratch image has no
+      # health check. Wait until bff answers.
+      - |
+        i=0
+        until curl --silent --fail --max-time 2 --output /dev/null "http://127.0.0.1:{{.REGRESSION_PORT}}/api/config"; do
+          i=$((i + 1))
+          if [ "$i" -ge 30 ]; then
+            echo "127.0.0.1:{{.REGRESSION_PORT}}/api/config does not answer" >&2
+            exit 1
+          fi
+          sleep 1
+        done
+
+  regression-down:
+    desc: Stop the regression stack and remove its container; the image stays
+    cmds:
+      - docker compose -p {{.REGRESSION_PROJECT}} -f compose.regression.yaml down
+
+  logs:
+    desc: Follow the stack's logs; task compose:logs -- myw for one service
+    cmds:
+      - docker compose logs {{.CLI_ARGS}}
+
+  check:
+    desc: The files resolve, no service of the stack publishes a port, and a start without TS_DOMAIN is refused
+    env:
+      TS_DOMAIN: '{{.TS_DOMAIN | default "check.invalid"}}'
+    cmds:
+      - docker compose config --quiet
+      - |
+        if docker compose config | grep -qE '^ +(ports|expose):'; then
+          echo "a service publishes a port; the stack publishes none" >&2
+          exit 1
+        fi
+      - |
+        if TS_DOMAIN= docker compose config --quiet 2>/dev/null; then
+          echo "compose resolves without TS_DOMAIN; it must refuse" >&2
+          exit 1
+        fi
+      - echo "compose.yaml resolves, publishes no port, and needs TS_DOMAIN"
+      # The regression stack: it resolves with no TS_ variable set, names
+      # none, and builds as compose.yaml does.
+      - |
+        for v in $(env | sed -n 's/^\(TS_[A-Za-z0-9_]*\)=.*/\1/p'); do unset "$v"; done
+        docker compose -p {{.REGRESSION_PROJECT}} -f compose.regression.yaml config --quiet
+        if docker compose -p {{.REGRESSION_PROJECT}} -f compose.regression.yaml config | grep -n 'TS_'; then
+          echo "compose.regression.yaml names a TS_ variable; the regression stack has no tailnet" >&2
+          exit 1
+        fi
+        if ! diff <(sed -n '/^x-build:/,/^$/p' compose.yaml) <(sed -n '/^x-build:/,/^$/p' compose.regression.yaml); then
+          echo "the x-build blocks of compose.yaml and compose.regression.yaml differ; keep them the same" >&2
+          exit 1
+        fi
+      - echo "compose.regression.yaml resolves, names no TS_ variable, and builds as compose.yaml does"
+
+  closed:
+    desc: "From a tailnet peer: the page answers on :443, and nothing on :8080 (bff) or :8090 (myw) behind Serve"
+    preconditions:
+      - sh: test -n "$TS_DOMAIN"
+        msg: set TS_DOMAIN, the tailnet domain, e.g. tail1234.ts.net
+    vars:
+      HOST: '{{.NODE}}.{{.TS_DOMAIN}}'
+    cmds:
+      # The control: the peer reaches the node, so no answer below
+      # means the port is closed, not the node gone.
+      - curl --silent --show-error --fail --max-time 10 --output /dev/null 'https://{{.HOST}}/healthz'
+      - |
+        for port in 8080 8090; do
+          if curl --silent --max-time 5 --output /dev/null "http://{{.HOST}}:$port/healthz"; then
+            echo "{{.HOST}}:$port answers on the tailnet; it must not" >&2
+            exit 1
+          fi
+        done
+      - echo "{{.HOST}} serves the page on :443, and nothing on :8080 or :8090"

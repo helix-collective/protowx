@@ -1,0 +1,58 @@
+/* The page's frame: the bar on top, and the calculation list, the form
+   and the result side by side under it. The parts paint themselves from
+   @protowx/ui's theme.css and ui.css; the `--pw-*` names here are read
+   from there, never declared here. */
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font: var(--pw-font);
+  color: var(--pw-fg);
+  background: var(--pw-bg);
+}
+
+code,
+pre {
+  font-family: var(--pw-mono);
+}
+
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--pw-list-width) minmax(0, 1fr) var(--pw-result-width);
+  grid-template-rows: var(--pw-bar-height) minmax(0, 1fr);
+  grid-template-areas:
+    'bar bar bar'
+    'list form result';
+}
+
+.app > .bar {
+  grid-area: bar;
+}
+
+.app > .calculation-list {
+  grid-area: list;
+}
+
+.app > .form-column {
+  grid-area: form;
+  min-width: 0;
+  overflow: auto;
+}
+
+.app > .result {
+  grid-area: result;
+}

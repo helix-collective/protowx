@@ -10,10 +10,8 @@ evidence. Its heading's **type** row says what the user asks: for a
 `docs/features/001-calculator/prd.md` section 6 is the design.
 
 **A report is** one Markdown file, `YYYYMMDD-HHMM__<title>.md`, with
-its screenshots, `<name>.png`, its narration, `<name>.wav`, and its
-recording file, `<name>.recording.json`, beside it. The directory is
-local: git ignores it. A recording kept as a test is added with
-`git add -f`.
+its screenshots, `<name>.png`, beside it. The directory is local: git
+ignores it. A report kept as a test is added with `git add -f`.
 
 ## The type
 
@@ -36,37 +34,35 @@ A report written before the type has no type row: read it as a `bug`.
 ## Read a report in this order
 
 1. **What the user says**: the complaint.
-2. **Steps**: what the user did, by time, from the record button on.
-3. **Engine messages**: the store at the start, then each request and
-   each response, to feed a fresh engine.
-4. **Page state** and its **UI state**: where the focus and the
-   selection were at the start and at the end.
+2. **Steps**: what the page did, by time, from the record button on.
+3. **The store at the start** and **Replay**: the file of `bff
+   --store`, and each request that changed it. Start a fresh `bff` on
+   the file, and send the requests to `POST /api/calc`, in order.
+4. **What the engine answered**, **The store at the end** and **The
+   form**: what the replay must give back.
+5. **Errors** and **Engine messages**: each failed message, each error
+   the page threw, and every message by its number.
+
+The **kind** row says which sections the file holds. A `ui` report has
+no store and no message; a `prompt` report has the user's words alone.
 
 ## The Steps lines
 
-| what     | the line, after its time                                     |
-|----------|--------------------------------------------------------------|
-| `status` | a sentence of the status line                                |
-| `key`    | `Enter · form · on text → evaluated`                         |
-| `click`  | `calculation list · row precedence → open in the form`       |
-| `focus`  | `from calculation list to form`: a move no key or click made |
+| what     | the line, after its time                          |
+|----------|---------------------------------------------------|
+| `status` | a sentence of the status line                     |
+| `put`    | a save: `a new calculation, "rent"`, or `id 4, …` |
+| `delete` | a delete: `id 4`                                  |
 
-A key line names the key as the user pressed it, with the platform's
-names: `Control`, `Cmd`, `Option` and `Shift` on a Mac; `Ctrl`, `Meta`,
-`Alt` and `Shift` elsewhere.
-
-After the key, the line names the part with the focus, what the key
-was on, and what changed after it. A key that changed nothing says
-`no change` or `no binding`; that is often the bug. A key in a field
-is not a line unless the page binds it, or it is `Enter`, `Escape` or
-`Tab`. `a character` is a key that typed one; the value is never in a
-step.
+The recording holds the messages and the status line. It holds no key
+and no click: a report shows the page's state through its screenshots
+and the form at both ends.
 
 ## The zero
 
-The record button is the start of the report. The store at the start,
-the page state and the UI state are the state at that moment. Engine
-messages leaves out a message begun before it, and says so. To see a
+The record button is the start of the report. The store at the start
+and the form are the state at that moment. Engine messages leaves out
+a message begun before it, and says so. To see a
 change from before the start, ask the user to record again from an
 earlier point.
 

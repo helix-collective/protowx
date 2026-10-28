@@ -7,6 +7,7 @@ for the admin who runs the stack.
 
 ## 2026-10-28
 
+- Dictate an expression: My Whisper turns speech into the text.
 - The page: keep calculations in a list, edit them in a form, and
   evaluate them, offline in the browser or connected to `bff`.
 - A feedback recording turns what you did into one file an agent reads

@@ -79,9 +79,14 @@ form is the calculator.
 **parse error** — the message under the text when the text does not
 parse, at its column.
 
-**dictate** — the button beside the text. It records speech until it
-is clicked again, and puts the transcript in the text. The page draws
-it only when a transcription service is set.
+**dictate** — the button to the right of the text. A click opens the
+microphone, and the button reads **● stop** in red while it listens.
+A second click stops it. The button reads **writing …** while My
+Whisper writes the words, then the words go after the text. The page
+draws the button only when `bff` names My Whisper, with `--myw-url`.
+
+**My Whisper** — the transcription service, `services/myw`. It turns
+the dictated speech into words. The page talks to it, not `bff`.
 
 **bindings** — the small table of the variables the expression may
 name: a name and a value per row. It has a fixed height, and scrolls.

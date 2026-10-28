@@ -8,6 +8,11 @@ The brief product log is [../changelog.md](../changelog.md).
 
 ## 2026-10-28
 
+- **Added.** **dictate**, to the right of the text, when `bff` names
+  My Whisper. Click **dictate** and speak; click **● stop**, and the
+  words go after the text. The page does not draw the button offline,
+  or when no service is set. See
+  [the glossary](../../glossary.md#the-form).
 - **Added.** The page: the bar, the calculation list, the form and the
   result. Click a row to open a calculation, click **evaluate** to see
   its value and its printed expression, and click **new**, **save**

@@ -426,7 +426,7 @@ audio and answers text. It has no tsnet: the module `myw`, the binary
 `myw-<branch>` in the stack. The page's `transcribeClient.ts` and
 `narrationMic.ts` are in `web/apps/app/`, and a **dictate** button
 beside the text records until it is clicked again and puts the
-transcript in the text. The button is drawn only when `GET
+transcript after the text, less a final full stop. The button is drawn only when `GET
 /api/config` names a service, so the offline page and a `bff` with no
 `--myw-url` have no button.
 

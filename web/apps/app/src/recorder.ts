@@ -8,9 +8,8 @@
 // It is paused while the feedback dialog is up, so nothing behind the
 // dialog is kept, and resumed by keep recording.
 //
-// sheafdb's recorder.ts is the study's event recorder. The starter has
-// no study, so this file holds what sheafdb's App.tsx does in
-// beginRecording and stopRecording instead.
+// The starter has no study, so it has no event recorder for one. This
+// file holds the begin and the stop of a recording instead.
 
 import type { RequestLog } from '@protowx/client';
 import { createRecording, type Recorder, type Snapshot } from './recording';

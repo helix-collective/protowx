@@ -26,8 +26,8 @@ section 5 is the design.
 - **It knows nothing of the page.** Bytes in, text out. It writes no
   file and does not know `.bugreports/`. The page puts the words in
   the text.
-- **It has no tailnet node.** sheafdb's copy has `tailnet/` and the
-  `--tailnet` flags; this one does not. In the stack, the tailscale
+- **It has no tailnet node.** It has no `tailnet/` and no
+  `--tailnet` flags. In the stack, the tailscale
   container is the one way onto the tailnet, and the page's origin
   there is an `--origin`.
 - **A live stream is one span.** `server/live.go` keeps the stream's

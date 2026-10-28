@@ -2,7 +2,7 @@
 
 This page is a guide. It shows how to write a calculation, evaluate
 it, and keep it. The names of the parts on screen are in the
-[glossary](../../../glossary.md).
+[glossary](/docs/glossary.md).
 
 ![The page with the calculation "the example" open. The calculation list on the left marks "the example" as the open row. The form in the middle shows the text (x + 3) * y and the bindings x = 5 and y = 1. The result on the right shows the value 8 and, under it, the printed expression ((x + 3) * y).](../screenshots/evaluating-an-expression-1.png)
 
@@ -71,5 +71,5 @@ The bar says the **mode**.
 
 ## See also
 
-- [glossary.md](../../../glossary.md): the names of the parts.
+- [glossary.md](/docs/glossary.md): the names of the parts.
 - [changelog.md](../changelog.md): what changed on the page.

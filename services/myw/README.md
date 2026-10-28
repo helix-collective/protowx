@@ -4,8 +4,7 @@ whisper.cpp in Go, through kronk, as a service the page talks to. It
 turns the speech of **dictate** into words,
 [docs/features/001-calculator/prd.md](../../docs/features/001-calculator/prd.md)
 section 5. The model is in the binary, and there is no `whisper-cli`
-on the `PATH` and no cgo. It is sheafdb's `cli/transcribe`, renamed,
-without its tailnet node.
+on the `PATH` and no cgo. It has no tailnet node.
 
 ```sh
 task myw:model        # the model, 142 MB, once; the hash is checked
@@ -129,9 +128,9 @@ loads the shell's whisper.cpp and the built-in model through it, with
 35 packages under it. The prototype also had `engine`, kronk's
 `sdk/bucky` with its download tools, its catalog, `go-getter` with the
 AWS and Google Cloud SDKs, and yzma's llama bindings: 708 packages,
-for nothing the dictation needs. sheafdb deleted it, and `go mod tidy`
-dropped 338 packages from the binary's dependency list. sheafdb's copy
-had tsnet too, 362 packages; this one has not. Of the packages outside
+for nothing the dictation needs. That code is deleted, and `go mod tidy`
+dropped 338 packages from the binary's dependency list. A copy with a
+tailnet node has tsnet too, 362 packages; this one has not. Of the packages outside
 the standard library that are left, 51 are the HTTP side with the
 model, and 35 the model alone.
 
@@ -228,7 +227,7 @@ no further.
 ## Measured
 
 The fixture is `testdata/narration.wav`: 7.13 s of synthetic speech.
-sheafdb measured it on an Intel Xeon Platinum 8488C, 4 vCPUs, busy:
+It was measured on an Intel Xeon Platinum 8488C, 4 vCPUs, busy:
 
 | what                            | model   | threads     | time   |
 |---------------------------------|---------|-------------|--------|

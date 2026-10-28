@@ -38,7 +38,7 @@ import {
   type ParseErrorView,
   type SavedView,
 } from '../src/index';
-import appCss from '../../../apps/app/src/app.css?inline';
+import appCss from '@app/app.css?inline';
 import { seeds } from './fixtures';
 
 beforeAll(async () => {

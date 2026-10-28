@@ -1,5 +1,4 @@
-// The voice's audio in node: the cut to 16 kHz and the WAV. sheafdb's
-// narration.test.ts, cut to the parts narration.ts keeps.
+// The voice's audio in node: the cut to 16 kHz and the WAV.
 
 import { describe, expect, it } from 'vitest';
 import { downsample, Downsampler, RATE, wav } from '../src/narration';

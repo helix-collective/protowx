@@ -1,6 +1,6 @@
 // The voice as plain values: 16 kHz mono 16-bit samples, cut from the
-// device's rate, and the WAV that holds them. sheafdb's narration.ts,
-// cut to its audio: the dictation needs no spans and no transcript.
+// device's rate, and the WAV that holds them. It is the audio half of
+// a narration: the dictation needs no spans and no transcript.
 // docs/features/001-calculator/prd.md section 5.
 //
 // Nothing here imports Solid or touches the microphone; narrationMic.ts

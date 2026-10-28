@@ -3,6 +3,7 @@
 // a token of theme.css would not be in effect either. Tests are
 // `*.browser.tsx`. The browser is the flake's playwright-driver.browsers,
 // to which the npm `playwright` is pinned.
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import solid from 'vite-plugin-solid';
 import { playwright } from '@vitest/browser-playwright';
@@ -11,6 +12,11 @@ export default defineConfig({
   plugins: [solid()],
   resolve: {
     conditions: ['development', 'browser'],
+    // The app's stylesheet, for controlsStayPut.browser.tsx. An alias
+    // keeps the path inside web/, where a check of the tree reads it.
+    alias: {
+      '@app': fileURLToPath(new URL('../../apps/app/src', import.meta.url)),
+    },
   },
   test: {
     name: 'ui',

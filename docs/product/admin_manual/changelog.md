@@ -23,6 +23,6 @@ commit. The brief product log is [../changelog.md](../changelog.md).
   `task myw:serve` serves on `127.0.0.1:8090`; then `task
   bff:connected -- --myw-url http://127.0.0.1:8090` names it to the
   page. A `bff` on another address needs `myw serve --origin <its
-  origin>`. See [services/myw/README.md](../../../services/myw/README.md).
+  origin>`. `services/myw/README.md` is the service's page.
 - **Changed.** `task test`, and so `task gate`, runs `task myw:test`,
   which downloads the model on its first run.

@@ -31,7 +31,7 @@ nix develop                               # a shell to work on them
 ```
 Inputs:
 ├───nixpkgs: github:NixOS/nixpkgs/aa48d34 (2026-10-05 09:07:57)
-├───ohm-go: github:ohmjs/ohm-go/d905d0e
+├───ohm-go: github:ohmjs/ohm-go/39a1186
 └───repo-tools: github:wxio/repo-tools/9440ab2
     └───nixpkgs follows input 'nixpkgs'
 ```
@@ -244,6 +244,12 @@ Set either, or both. The banner names the mode of each. The bump task
 of `ohm-cli` is `task nix:update-ohm-cli`. It also writes the new
 `vendorHash` into `flake.nix`, since `ohm-cli`'s `go.sum` moves with
 the input.
+
+**The `ohm-go` input follows a tag, not `main`.** Its URL is
+`github:ohmjs/ohm-go?ref=ohm-cli/v1.1.0`. The `main` of `ohm-go` is
+older than that tag: it has no `--strict` and no `error` kind, and
+`task calc:grammar-test` uses both. To move the pin, change the `ref`
+in `flake.nix` to the newer tag, then run `task nix:update-ohm-cli`.
 
 **The local `ohm-cli` is not a nix build.** The pinned one is: nix
 vendors `ohm-cli`'s modules under `GOWORK=off`, so it builds against

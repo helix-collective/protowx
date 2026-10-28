@@ -12,10 +12,12 @@
   # ohm-cli, from the source of ohm-go: the grammar test runner,
   # `ohm-cli test txtar`, over spec/ohm-cli/tests. Its flake
   # exports no package, so this one builds the binary from the pinned
-  # source. `task nix:update-ohm-cli` bumps it. OHM_GO_DEV in .envrc
-  # builds a local checkout instead, with the shell's Go; see
-  # mkOhmCliLocal.
-  inputs.ohm-go.url = "github:ohmjs/ohm-go";
+  # source. The input follows the tag ohm-cli/v1.1.0, not main: main
+  # has no --strict and no error kind, which task calc:grammar-test
+  # needs. Move the ref to a newer tag, then `task nix:update-ohm-cli`.
+  # OHM_GO_DEV in .envrc builds a local checkout instead, with the
+  # shell's Go; see mkOhmCliLocal.
+  inputs.ohm-go.url = "github:ohmjs/ohm-go?ref=ohm-cli/v1.1.0";
   inputs.ohm-go.flake = false;
 
   outputs = { self, nixpkgs, repo-tools, ohm-go }:
@@ -131,7 +133,7 @@
         version = "0-unstable-${ohmRev}";
         src = ohm-go;
         modRoot = "ohm-cli";
-        vendorHash = "sha256-lJIqqYrkY0NsD0azEZ6Z1x2teAmIHhMQO8LWjjnAtsI=";
+        vendorHash = "sha256-hK3uCRHND5ETO+WwDAQ1MxC8mtmgUTKBu3xgWlrO3fI=";
         env.GOWORK = "off";
         doCheck = false;
 

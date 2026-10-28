@@ -19,15 +19,16 @@
     "ohm-go": {
       "flake": false,
       "locked": {
-        "lastModified": 1791871993,
-        "narHash": "sha256-3S53w8A5N94BrXGpCgfqIQpfygRVrQJHx3D1Ka4cAls=",
+        "lastModified": 1793079854,
+        "narHash": "sha256-3ORZaLMj0KAPQtaovnybpJgsCUlKHo0nUWpmmtXR/T0=",
         "owner": "ohmjs",
         "repo": "ohm-go",
-        "rev": "d905d0ef462816dde9ea392a27f9f0b997d05ca2",
+        "rev": "39a11866cbe0b5ed1839e71a5f1cc140d6a8163a",
         "type": "github"
       },
       "original": {
         "owner": "ohmjs",
+        "ref": "ohm-cli/v1.1.0",
         "repo": "ohm-go",
         "type": "github"
       }

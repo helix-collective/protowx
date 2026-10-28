@@ -65,7 +65,7 @@ tasks:
         echo "repo-tools pinned at ${rev:0:7}; commit flake.lock"
 
   nix:update-ohm-cli:
-    desc: Pin flake.lock to the ohm-go on main, fix ohm-cli's vendorHash, reload the shell; commit flake.lock and flake.nix after
+    desc: Pin flake.lock to the ohm-go ref that flake.nix names, fix ohm-cli's vendorHash, reload the shell; commit flake.lock and flake.nix after
     # ohm-cli is built in flake.nix from the ohm-go input, and its
     # vendorHash changes whenever ohm-cli's go.sum does. The build
     # reports the right hash on a mismatch, so the task writes it in and

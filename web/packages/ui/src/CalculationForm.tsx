@@ -3,7 +3,7 @@
 // **delete**. docs/glossary.md, "The form".
 //
 //   name      [                     ]
-//   text      [(x + 3) * y          ]
+//   text      [(x + 3) * y          ]  [dictate]
 //             ^ the parse error, at its column
 //   bindings  name   value   ×
 //             [add]
@@ -14,14 +14,18 @@
 //
 // It is controlled: the app holds the record and the parse error, and
 // this file knows nothing of the engine. Enter in a field evaluates,
-// the form's default action.
+// the form's default action. The app holds the dictation too:
+// **dictate** is drawn when the app gives its state, which it does when
+// the server names My Whisper, and a click says so by onDictate.
 //
 // Controls stay put (web/AGENTS.md): the parse error's line has a fixed
 // height and is there when it is empty; the bindings scroll in a fixed
 // height; a hidden notes text area keeps its place; every button has
-// one width.
+// one width. **dictate** sits right of the form's width, out of the
+// flow, so drawn or not it moves nothing; its words change, its width
+// does not.
 
-import { createSignal, type JSX } from 'solid-js';
+import { createSignal, Show, type JSX } from 'solid-js';
 import type { Base, Calculation } from '@protowx/client';
 import { Bindings } from './Bindings';
 
@@ -34,6 +38,24 @@ export interface ParseErrorView {
   column: number;
 }
 
+/** The dictation: off, waiting for the microphone, listening, or waiting for the words. */
+export type DictateState = 'idle' | 'asking' | 'listening' | 'transcribing';
+
+/** The dictate button's words in each state, in one width. */
+export const DICTATE_WORDS: Record<DictateState, string> = {
+  idle: 'dictate',
+  asking: 'mic …',
+  listening: '● stop',
+  transcribing: 'writing …',
+};
+
+/** What the app tells the dictate button. */
+export interface DictateView {
+  state: DictateState;
+  /** The button's tooltip: what a click does now. */
+  title: string;
+}
+
 export interface CalculationFormProps {
   calculation: Calculation;
   onChange(next: Calculation): void;
@@ -44,6 +66,9 @@ export interface CalculationFormProps {
   onEvaluate(): void;
   onSave(): void;
   onDelete(): void;
+  /** The dictate button's state; absent, the button is not drawn. */
+  dictate?: DictateView;
+  onDictate?(): void;
 }
 
 export function CalculationForm(props: CalculationFormProps): JSX.Element {
@@ -77,10 +102,13 @@ export function CalculationForm(props: CalculationFormProps): JSX.Element {
           onInput={(ev) => change({ name: ev.currentTarget.value })}
         />
       </label>
-      <label class="field">
-        <span class="field-label">text</span>
+      <div class="field text-field">
+        <label class="field-label" for="calculation-text">
+          text
+        </label>
         <input
           type="text"
+          id="calculation-text"
           name="text"
           class="text"
           data-term="text"
@@ -92,7 +120,23 @@ export function CalculationForm(props: CalculationFormProps): JSX.Element {
           aria-describedby="parse-error"
           onInput={(ev) => change({ text: ev.currentTarget.value })}
         />
-      </label>
+        <Show when={props.dictate}>
+          {(d) => (
+            <button
+              type="button"
+              class="dictate"
+              data-term="dictate"
+              data-state={d().state}
+              aria-pressed={d().state === 'listening'}
+              disabled={d().state === 'asking' || d().state === 'transcribing'}
+              title={d().title}
+              onClick={() => props.onDictate?.()}
+            >
+              {DICTATE_WORDS[d().state]}
+            </button>
+          )}
+        </Show>
+      </div>
       <div class="field parse-error-row">
         <span />
         <p class="parse-error" id="parse-error" data-term="parse-error" role="alert" title={props.parseError?.message ?? ''}>

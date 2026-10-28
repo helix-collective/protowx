@@ -242,6 +242,27 @@ button.primary:hover:not(:disabled) {
   font: var(--pw-text-font);
 }
 
+/* dictate: right of the text, past the form's width, out of the flow.
+   Drawn or not, it moves no other control; its words change in one
+   width. */
+.calculation-form .text-field {
+  position: relative;
+}
+
+.calculation-form .dictate {
+  position: absolute;
+  top: 0;
+  left: calc(100% + var(--pw-gap));
+  width: var(--pw-dictate-width);
+}
+
+.calculation-form .dictate[aria-pressed='true'],
+.calculation-form .dictate[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--pw-dictate-on-bg);
+  color: var(--pw-dictate-on-fg);
+  border-color: var(--pw-dictate-on-bg);
+}
+
 /* Under the text, in the text's column, one line high even when it is
    empty, so nothing under it moves when a parse error comes and goes. */
 .calculation-form .parse-error-row {

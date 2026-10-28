@@ -33,6 +33,7 @@ import {
   PROMPT_TYPES,
   Result,
   type BugKind,
+  type DictateState,
   type FeedbackType,
   type ParseErrorView,
   type SavedView,
@@ -115,6 +116,9 @@ function wholePage(): Mounted {
   const [parseError, setParseError] = createSignal<ParseErrorView>();
   const [answer, setAnswer] = createSignal<{ value: number; printed: string }>();
   const [error, setError] = createSignal<string>();
+  // dictate as the app plays it: a click listens, the next puts words
+  // after the text. The page is mounted with My Whisper named.
+  const [dictate, setDictate] = createSignal<DictateState>('idle');
   let next = 4;
   const open = (id: CalculationId) => {
     setDraft({ ...calcs().find((c) => c.id === id)! });
@@ -173,6 +177,20 @@ function wholePage(): Mounted {
               setDraft(emptyCalculation());
               if (recording()) setChanges(changes() + 1);
               setStatus('deleted');
+            }}
+            dictate={{
+              state: dictate(),
+              title: 'dictate',
+            }}
+            onDictate={() => {
+              if (dictate() === 'idle') {
+                setDictate('listening');
+                setStatus('dictating: click stop to put the words in the text');
+                return;
+              }
+              setDraft({ ...draft(), text: `${draft().text} + 1`.trim() });
+              setDictate('idle');
+              setStatus('dictated "+ 1"');
             }}
           />
         </main>
@@ -278,6 +296,11 @@ const cases: Case[] = [
   },
   { name: 'the notes: off and on, twice', mount: wholePage, steps: [row(1), notes, notes, notes, notes] },
   { name: 'the star: on and off', mount: wholePage, steps: ['[data-term=star]', '[data-term=star]'] },
+  {
+    name: 'dictate, stop, dictate, stop: the words land in the text',
+    mount: wholePage,
+    steps: [row(0), '[data-term=dictate]', '[data-term=dictate]', '[data-term=dictate]', '[data-term=dictate]'],
+  },
   {
     name: 'evaluate: a value, an evaluation error, then a parse error',
     mount: wholePage,

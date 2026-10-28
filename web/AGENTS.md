@@ -7,19 +7,19 @@ the parts on screen; use those words in code, comments and commit
 messages. `docs/features/001-calculator/prd.md` section 4 is the
 design.
 
-| directory                       | role                                                                |
-|---------------------------------|---------------------------------------------------------------------|
-| `spec/api.adl`                  | the protocol between the page and the engine                        |
-| `engine/wasm/main.go`           | the `js/wasm` entry: `calcRequest` on the global                    |
-| `services/bff/engine.go`        | the same engine behind `POST /api/calc`                             |
-| `web/packages/client/`          | the worker, the HTTP transport, the factory, the log, `engine.ts`   |
-| `web/packages/client/src/adl/`  | generated from `spec/*.adl` by `task calc:adl-ts`; tracked          |
-| `web/packages/client/wasm/`     | `calc.wasm` and `wasm_exec.js`, from `task calc:wasm`; git ignores  |
-| `web/packages/ui/`              | the Solid components: the bar, the list, the form, the result       |
-| `web/packages/ui/src/theme.css` | every size, colour and face, grouped by the glossary                |
-| `web/packages/ui/src/ui.css`    | the shapes of the parts; it reads `theme.css` for every value       |
-| `web/apps/app/`                 | the Vite app: the page, the mode, the feedback recording and report |
-| `web/regression/`               | the Playwright suite, the scenarios and their baselines             |
+| directory                       | role                                                                 |
+|---------------------------------|----------------------------------------------------------------------|
+| `spec/api.adl`                  | the protocol between the page and the engine                         |
+| `engine/wasm/main.go`           | the `js/wasm` entry: `calcRequest` on the global                     |
+| `services/bff/engine.go`        | the same engine behind `POST /api/calc`                              |
+| `web/packages/client/`          | the worker, the HTTP transport, the factory, the log, `engine.ts`    |
+| `web/packages/client/src/adl/`  | generated from `spec/*.adl` by `task calc:adl-ts`; tracked           |
+| `web/packages/client/wasm/`     | `calc.wasm` and `wasm_exec.js`, from `task calc:wasm`; git ignores   |
+| `web/packages/ui/`              | the Solid components: the bar, the list, the form, the result        |
+| `web/packages/ui/src/theme.css` | every size, colour and face, grouped by the glossary                 |
+| `web/packages/ui/src/ui.css`    | the shapes of the parts; it reads `theme.css` for every value        |
+| `web/apps/app/`                 | the Vite app: the page, the mode, the feedback report, the dictation |
+| `web/regression/`               | the Playwright suite, the scenarios and their baselines              |
 
 - Never hand-edit `packages/client/src/adl/`. Change the `.adl` file
   in `spec/` and run both generators, `task calc:goadlc` and `task
@@ -64,7 +64,7 @@ control is a button, a checkbox, a select, an input or a clickable
 row. The test is the user's: click, see the change, and click the
 same pixel again, with no move of the mouse and no search.
 
-Text that changes is the usual cause. Five ways keep the rule:
+Text that changes is the usual cause. Six ways keep the rule:
 
 - **Give a label that changes a fixed width.** Make it a token in
   `theme.css`, wide enough for the longest value. **record**, which
@@ -80,6 +80,10 @@ Text that changes is the usual cause. Five ways keep the rule:
   screenshot list of the feedback dialog does the same.
 - **Show a state in colour, never in size.** The open row changes its
   fill and its text colour; its padding and its weight stay.
+- **Put a control that comes and goes out of the flow.** **dictate**
+  is drawn only when the server names My Whisper. It sits right of the
+  form's width, positioned on the text's line, so drawn or not it
+  moves nothing. Its words change in `--pw-dictate-width`.
 
 The feedback dialog sits at a fixed place from the top, not in the
 middle, so a change of its height moves none of its controls.
@@ -102,9 +106,9 @@ with the control named. It mounts the whole page in the app's grid,
 `apps/app/src/app.css`, with a fake engine, and the feedback dialog
 on its own. Each control of `docs/features/001-calculator/prd.md`
 section 4.2 has a row: **record** and stop, **new**, a row, the name
-and the text, **add** and **remove**, the base, the notes, the star,
-**evaluate**, **save** and **delete**, and the dialog's type, kind,
-option, screenshot `×`, Escape and submit. Add a row when you add a
+and the text, **dictate** and stop, **add** and **remove**, the base,
+the notes, the star, **evaluate**, **save** and **delete**, and the
+dialog's type, kind, option, screenshot `×`, Escape and submit. Add a row when you add a
 control, or a gesture on one.
 
 ## Arrow keys are inverses

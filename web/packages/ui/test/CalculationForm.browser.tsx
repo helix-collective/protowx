@@ -1,18 +1,19 @@
 // The form in a browser: each field of model.Calculation changes the
 // record; evaluate, save and delete reach the app; the parse error sits
-// under the text, at its column.
+// under the text, at its column; dictate is drawn only when the app
+// gives its state, and moves nothing.
 
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { cleanup, render } from 'vitest-browser-solid';
 import { createSignal } from 'solid-js';
 import { emptyCalculation, type Calculation } from '@protowx/client';
-import { CalculationForm, type ParseErrorView } from '../src/index';
+import { CalculationForm, DICTATE_WORDS, type DictateView, type ParseErrorView } from '../src/index';
 import { host, seeds } from './fixtures';
 
 afterEach(() => cleanup());
 
-function mount(start: Calculation, parseError?: () => ParseErrorView | undefined) {
+function mount(start: Calculation, parseError?: () => ParseErrorView | undefined, dictate?: () => DictateView | undefined) {
   const el = host('600px');
   const [calc, setCalc] = createSignal(start);
   const calls: string[] = [];
@@ -25,6 +26,8 @@ function mount(start: Calculation, parseError?: () => ParseErrorView | undefined
         onEvaluate={() => calls.push('evaluate')}
         onSave={() => calls.push('save')}
         onDelete={() => calls.push('delete')}
+        dictate={dictate?.()}
+        onDictate={() => calls.push('dictate')}
       />
     ),
     { container: el },
@@ -89,6 +92,50 @@ describe('CalculationForm', () => {
     const caretLeft = caret.getBoundingClientRect().left + parseFloat(getComputedStyle(caret).paddingLeft);
     const textLeft = text.getBoundingClientRect().left + parseFloat(getComputedStyle(text).borderLeftWidth) + parseFloat(getComputedStyle(text).paddingLeft);
     expect(Math.abs(caretLeft - (textLeft + 6 * ch))).toBeLessThan(1);
+  });
+});
+
+describe('dictate', () => {
+  it('is not drawn when the app gives no state: no My Whisper', () => {
+    const { el } = mount(seeds[0]!);
+    expect(el.querySelector('[data-term=dictate]')).toBeNull();
+  });
+
+  it('says each state in its words, in one width, and a click reaches the app', async () => {
+    const [d, setD] = createSignal<DictateView>({ state: 'idle', title: 'speak' });
+    const { calls, q } = mount(seeds[0]!, undefined, d);
+    const button = q<HTMLButtonElement>('[data-term=dictate]');
+    const box = button.getBoundingClientRect();
+    expect(button.textContent).toBe('dictate');
+    await userEvent.click(button);
+    expect(calls).toEqual(['dictate']);
+    for (const state of ['asking', 'listening', 'transcribing', 'idle'] as const) {
+      setD({ state, title: state });
+      expect(button.textContent).toBe(DICTATE_WORDS[state]);
+      expect(button.disabled).toBe(state === 'asking' || state === 'transcribing');
+      expect(button.getAttribute('aria-pressed')).toBe(String(state === 'listening'));
+      expect(button.getBoundingClientRect()).toEqual(box);
+    }
+  });
+
+  it('sits right of the text, on its line, and moves no other control', () => {
+    // Each box from the mount's corner: a second mount may sit lower on the page.
+    const boxes = (el: HTMLElement) => {
+      const at = el.getBoundingClientRect();
+      return [...el.querySelectorAll<HTMLElement>('input, select, textarea, button:not([data-term=dictate])')].map((c) => {
+        const r = c.getBoundingClientRect();
+        return [r.x - at.x, r.y - at.y, r.width, r.height];
+      });
+    };
+    const without = mount(seeds[0]!);
+    const before = boxes(without.el);
+    cleanup();
+    const withIt = mount(seeds[0]!, undefined, () => ({ state: 'idle', title: '' }));
+    expect(boxes(withIt.el)).toEqual(before);
+    const text = withIt.q('[data-term=text]').getBoundingClientRect();
+    const button = withIt.q('[data-term=dictate]').getBoundingClientRect();
+    expect(button.top).toBe(text.top);
+    expect(button.left).toBeGreaterThan(text.right);
   });
 });
 

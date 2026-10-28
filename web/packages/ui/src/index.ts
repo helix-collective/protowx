@@ -7,7 +7,15 @@ import './ui.css';
 export { Bar, stopWords, type BarProps } from './Bar';
 export { StatusLine, type StatusLineProps } from './StatusLine';
 export { CalculationList, NO_NAME, type CalculationListProps } from './CalculationList';
-export { CalculationForm, BASES, type CalculationFormProps, type ParseErrorView } from './CalculationForm';
+export {
+  CalculationForm,
+  BASES,
+  DICTATE_WORDS,
+  type CalculationFormProps,
+  type DictateState,
+  type DictateView,
+  type ParseErrorView,
+} from './CalculationForm';
 export { Bindings, integerOf, type BindingsProps } from './Bindings';
 export { Result, NO_RESULT, type ResultProps } from './Result';
 export { BugReportDialog, type BugReportDialogProps, type SavedView } from './BugReportDialog';

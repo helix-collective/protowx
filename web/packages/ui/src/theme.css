@@ -90,6 +90,11 @@
   --pw-text-char: 1ch;
   /* The text's left padding, which the parse error's caret starts at. */
   --pw-text-pad: 6px;
+  /* dictate: one width for dictate, stop and the waits. While it
+     listens it is in record's colours: the microphone is on. */
+  --pw-dictate-width: var(--pw-button-width);
+  --pw-dictate-on-bg: var(--pw-record-on-bg);
+  --pw-dictate-on-fg: var(--pw-record-on-fg);
   --pw-parse-error-fg: #b91c1c;
   --pw-parse-error-height: 1.6em;
   /* The bindings: a fixed height that scrolls, so a new binding moves

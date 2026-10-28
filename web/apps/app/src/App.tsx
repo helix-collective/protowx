@@ -30,17 +30,21 @@ import {
   PROMPT_TYPES,
   Result,
   type BugKind,
+  type DictateState,
   type FeedbackType,
   type ParseErrorView,
   type SavedView,
 } from '@protowx/ui';
 import { formCopy, renderReport, SECTIONS, summaryOf } from './bugReport';
+import { Dictation, DICTATE_TITLES, dictatedLine, withDictated, type DictationDeps } from './dictation';
 import { describeEngine, OFFLINE_LINE, readEngineConfig } from './engineConfig';
 import { startRecording, type LiveRecording } from './recorder';
 import type { Recording, Snapshot } from './recording';
 import { saveReport, savedView } from './reportSink';
 import { dialogOpen, isScreenshotKey, takeScreenshot } from './screenshot';
+import { openMic } from './narrationMic';
 import { NO_SERVER, readServerConfig, type ServerConfig } from './serverConfig';
+import { transcribeWav } from './transcribeClient';
 
 /** One screenshot taken while a recording ran: the PNG, a URL for its thumbnail, when, and its caption. */
 interface Shot {
@@ -53,6 +57,12 @@ interface Shot {
 const messageOf = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 const count = (n: number, noun: string): string => (n === 1 ? `1 ${noun}` : `${n} ${noun}s`);
 const named = (c: Calculation): string => JSON.stringify(c.name === '' ? c.text : c.name);
+
+/** The dictation's microphone and service: the browser's. */
+const browserDictation: DictationDeps = {
+  openMic,
+  transcribe: (url, w) => transcribeWav(url, w),
+};
 
 export function App(): JSX.Element {
   const log = new RequestLog();
@@ -68,8 +78,8 @@ export function App(): JSX.Element {
   }
 
   // ---- the mode -------------------------------------------------------
-  // The server's config: `api` picks the mode with the URL; `myw` is for
-  // the dictate button, which reads it in phase 5 of the plan.
+  // The server's config: `api` picks the mode with the URL; `myw` draws
+  // the dictate button.
   const [server, setServer] = createSignal<ServerConfig>(NO_SERVER);
   const [cfg, setCfg] = createSignal<EngineConfig>();
 
@@ -210,6 +220,45 @@ export function App(): JSX.Element {
       }
     });
   }
+
+  // ---- the dictation --------------------------------------------------
+  // dictate opens the microphone; the second click stops it, and the
+  // words My Whisper answers go after the text. The form draws the
+  // button when the server names My Whisper.
+  const [dictate, setDictate] = createSignal<DictateState>('idle');
+  let dictation: Dictation | undefined;
+
+  async function onDictate(): Promise<void> {
+    if (dictation) {
+      const d = dictation;
+      setDictate('transcribing');
+      setStatus('writing the words');
+      try {
+        const words = await d.stop();
+        if (words !== '') onChange({ ...draft(), text: withDictated(draft().text, words) });
+        setStatus(dictatedLine(words));
+      } catch (e) {
+        setStatus(`the dictation was not written: ${messageOf(e)}`);
+      } finally {
+        dictation = undefined;
+        setDictate('idle');
+      }
+      return;
+    }
+    const d = new Dictation(server().myw, browserDictation);
+    setDictate('asking');
+    try {
+      await d.start();
+    } catch (e) {
+      setDictate('idle');
+      setStatus(`the microphone did not open: ${messageOf(e)}`);
+      return;
+    }
+    dictation = d;
+    setDictate('listening');
+    setStatus('dictating: click stop to put the words in the text');
+  }
+  onCleanup(() => dictation?.cancel());
 
   // ---- the feedback recording ----------------------------------------
   const [recording, setRecording] = createSignal(false);
@@ -393,6 +442,15 @@ export function App(): JSX.Element {
           onEvaluate={onEvaluate}
           onSave={onSave}
           onDelete={onDelete}
+          dictate={
+            server().myw === ''
+              ? undefined
+              : {
+                  state: dictate(),
+                  title: DICTATE_TITLES[dictate()],
+                }
+          }
+          onDictate={() => void onDictate()}
         />
       </main>
       <Result answer={answer()} error={evalError()} base={draft().base} />

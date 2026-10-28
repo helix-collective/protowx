@@ -3,6 +3,7 @@
   "server": ["offline", "connected"],
   "steps": [
     { "see": "[data-term=row]", "count": 3 },
+    { "see": "[data-term=dictate]", "count": 0 },
     { "click": "[data-term=new]" },
     { "type": "rent", "into": "[data-term=name]" },
     { "type": "a * 12", "into": "[data-term=text]" },

@@ -91,11 +91,12 @@ tasks:
         echo "ohm-go pinned at ${rev:0:7}; commit flake.lock, and flake.nix if the vendorHash moved"
 
   test:
+    # web:test joins in phase 4 of docs/features/001-calculator/plan.md,
+    # and myw:test in phase 5. A dep on a task that does not exist yet
+    # fails the run.
     deps:
-      - web:test
       - bff:test
       - calc:test
-      - myw:test
 
   gate:
     desc: "Every check a merge needs, in order, to the first failure; the last line is gate: green or gate: red at <step>"

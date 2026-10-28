@@ -173,6 +173,8 @@ structs, a union, an optional, a boolean.
 ```
 module model {
 
+import sys.types.Maybe;
+
 newtype CalculationId = String;
 
 struct Calculation {
@@ -184,7 +186,7 @@ struct Calculation {
     Vector<Binding> bindings = [];
     /// How the result is shown.
     Base base = "decimal";
-    Maybe<String> notes = nothing;
+    Maybe<String> notes = "nothing";
     Bool starred = false;
 };
 
@@ -223,6 +225,7 @@ import model.Calculation;
 import model.CalculationId;
 import model.Binding;
 import calc.Exp;
+import sys.types.Maybe;
 
 union Request {
     /// Every calculation in the store.
@@ -297,7 +300,9 @@ seeded with three calculations so the page opens with something to
 click: the example's `(x + 3) * y`, a precedence case, and one that
 divides by zero. `bff` has the file store: `--store calculations.json`,
 read at start, written whole on each `put` and `delete`. A write that
-fails is an `error` response and the memory copy is kept.
+fails is an `error` response, and the engine's copy stays as it was,
+so the copy and the file agree. A missing file starts from the three
+seeded calculations, and is written at the first change.
 
 The memory store loses its changes on reload. The page says so, once,
 in the offline mode's status line: `offline: changes are kept until
@@ -340,7 +345,7 @@ Its flags:
 | `--myw-url`        | empty               | the transcription service; empty hides **dictate**   |
 | `--otlp-url`       | empty               | where spans go; empty wires nothing                  |
 | `--trace-view-url` | empty               | the viewer the report's trace line links to          |
-| `--open`           | `false`             | open the browser                                     |
+| `--open`           | empty               | the path to open in a browser, such as `/?offline`   |
 
 The engine API is single-tenant and correct on loopback only: one
 store, one grammar, one mutex. `services/bff/AGENTS.md` says so, and

@@ -10,6 +10,7 @@ the PRD, the plan, a phase, the scenario, and what each step writes.
 
 | directory                                      | reader                                   | a page is                                           |
 |------------------------------------------------|------------------------------------------|-----------------------------------------------------|
+| [architecture/](architecture/)                 | an engineer or an agent about to change  | how the whole system works, and where               |
 | [devtools/](devtools/)                         | an engineer who sets up or drives a tool | one tool: the command, the gotchas, the experiences |
 | [features/](features/)                         | an engineer, a product manager, an agent | one feature: `prd.md`, `plan.md`, `arch.md`         |
 | [kb/](kb/)                                     | an agent first, an engineer second       | research into an external source; and `go-style.md` |
@@ -17,9 +18,11 @@ the PRD, the plan, a phase, the scenario, and what each step writes.
 | [product/admin_manual/](product/admin_manual/) | the admin who runs the stack             | a task, a reference, or the change log              |
 | [glossary.md](glossary.md)                     | every reader                             | the names of the parts on screen                    |
 
-Two directories come later. `architecture/`, how the whole system
-works, comes with the engine. `changes/`, the visual diff that
+One directory comes later. `changes/`, the visual diff that
 `task baselines -- <descr>` writes, comes with the first baselines.
+[architecture/engine.md](architecture/engine.md) is the engine: the
+grammar to the AST, the AST to the value, the store and its two
+entries.
 
 Two tools have their pages elsewhere. `md-table-fmt` and the
 `prompt-history` commands live in

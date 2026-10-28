@@ -2,5 +2,47 @@
 
 version: '3'
 
-# Empty until its phase of docs/features/001-calculator/plan.md fills it.
-tasks: {}
+vars:
+  # Relative to this Taskfile's dir, services/bff, which is where task
+  # runs these commands from.
+  DIST_DIR: ../../web/apps/app/dist
+  # Where the page's feedback reports are written. The server answers
+  # each path relative to the repository, so the page shows
+  # .bugreports/... and not this spelling.
+  BUGS_DIR: ../../.bugreports
+  # The connected page's records. Git ignores the file.
+  STORE: ../../calculations.json
+
+tasks:
+
+  build:
+    desc: Build the bff binary into services/bff/
+    cmds:
+      - go build -o bff .
+
+  serve:
+    desc: "Build the page, then serve dist/ and the engine over HTTP; task bff:serve -- --addr 127.0.0.1:9000"
+    deps: [":web:build"]
+    cmds:
+      - go run . --dir {{.DIST_DIR}} --bugs {{.BUGS_DIR}} --store {{.STORE}} {{.CLI_ARGS}}
+
+  offline:
+    desc: "Run the page on the wasm engine in the browser: build, serve, open a window"
+    deps: [":web:build"]
+    cmds:
+      # --api=false because the offline mode needs no engine in the
+      # server, and a run that cannot reach one proves it. The report
+      # route stays on: it needs no engine.
+      - go run . --dir {{.DIST_DIR}} --bugs {{.BUGS_DIR}} --api=false --open '/?offline' {{.CLI_ARGS}}
+
+  connected:
+    desc: "Run the page on the engine in this process: build, serve, open a window"
+    deps: [":web:build"]
+    cmds:
+      - go run . --dir {{.DIST_DIR}} --bugs {{.BUGS_DIR}} --store {{.STORE}} --open '/' {{.CLI_ARGS}}
+
+  test:
+    desc: Go tests and vet
+    cmds:
+      - go test ./...
+      - go vet ./...

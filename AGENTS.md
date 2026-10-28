@@ -298,16 +298,16 @@ it, from the phase that fills the module. Claude Code loads the pair
 when it first reads a file under that directory. Read it before
 editing there.
 
-| directory       | what it holds                                                      |
-|-----------------|--------------------------------------------------------------------|
-| `spec/`         | the grammar, the three ADL files, the grammar's fixtures           |
-| `engine/`       | Go module `engine`: the grammar, the AST, the evaluator, the wasm  |
-| `clis/`         | Go module `clis`: one `main` package per command; `calc` first     |
-| `services/bff/` | Go module `bff`: the page, `/api/calc`, the report, the traces     |
-| `services/myw/` | Go module `myw`: My Whisper, whisper.cpp through kronk             |
-| `web/`          | the pnpm workspace: `client`, `ui`, the app, the regression suite  |
-| `deploy/`       | the compose stack: `bff`, `myw` and Jaeger behind one tailnet node |
-| `scripts/`      | `feature/finish.sh`, the body of `task feature:finish`             |
+| directory       | what it holds                                                     |
+|-----------------|-------------------------------------------------------------------|
+| `spec/`         | the grammar, the three ADL files, the grammar's fixtures          |
+| `engine/`       | Go module `engine`: the grammar, the AST, the evaluator, the wasm |
+| `clis/`         | Go module `clis`: one `main` package per command; `calc` first    |
+| `services/bff/` | Go module `bff`: the page, `/api/calc`, the report, the traces    |
+| `services/myw/` | Go module `myw`: My Whisper, whisper.cpp through kronk            |
+| `web/`          | the pnpm workspace: `client`, `ui`, the app, the regression suite |
+| `deploy/`       | the compose stack: `bff` and `myw` behind one tailnet node        |
+| `scripts/`      | `feature/finish.sh`, the body of `task feature:finish`            |
 
 `engine/` imports no service and no CLI, so the wasm build cannot link
 one. `services/bff` imports `engine`. `services/myw` imports kronk,
@@ -469,5 +469,5 @@ task web:install            # once
 task web:test               # regenerates both sides, then Vitest
 task web:dev                # the page on Vite's dev server
 task web:regression         # the scenarios on dist/, each shot against its baseline
-task web:regression:stack   # the report and the traces, on docker
+task web:regression:stack   # the stack's scenarios, on docker
 ```

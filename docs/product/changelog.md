@@ -7,6 +7,8 @@ for the admin who runs the stack.
 
 ## 2026-10-28
 
+- The compose stack: the page and the dictation on HTTPS, behind one
+  tailnet node.
 - Dictate an expression: My Whisper turns speech into the text.
 - The page: keep calculations in a list, edit them in a form, and
   evaluate them, offline in the browser or connected to `bff`.

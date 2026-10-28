@@ -21,7 +21,7 @@ commit. You never commit a baseline that you took.
   minutes: 10 to read, 10 to draft, and a few runs.
 - **Run each long command with a 10-minute timeout.** `task
   web:regression` builds `dist/` first, about 10 s, then plays.
-- **Run one suite at a time on the machine.** The ports `8096` to
+- **Run one suite at a time on the machine.** The ports `8094`, `8098` and
   `8099` are fixed. Do not play a scenario while a gate runs.
 - **Use an absolute path in each command.** The Bash tool resets the
   working directory between calls.

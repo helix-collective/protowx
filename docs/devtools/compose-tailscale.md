@@ -7,7 +7,7 @@
 # Check the file: it resolves, publishes no port, and needs TS_DOMAIN. No tailnet.
 task compose:check
 
-# Build the three images: bff, myw and Jaeger. No tailnet.
+# Build the two images: bff and myw. No tailnet.
 task compose:build
 
 # Build and start, as the node protowx-<branch>. Needs TS_AUTHKEY and TS_DOMAIN.
@@ -23,11 +23,12 @@ task compose:closed
 task compose:down
 ```
 
-`task compose:up` runs `bff`, `myw` and Jaeger in docker, behind one
-tailnet node, `protowx-<branch>`. It is the one-node way to run all
-three: one credential, one state volume, one name, and HTTPS from
-Tailscale Serve. Open `https://protowx-<branch>.<domain>/`. The
-transcription is on `:8443`, and the trace viewer on `:8445`.
+`task compose:up` runs `bff` and `myw` in docker, behind one tailnet
+node, `protowx-<branch>`. It is the one-node way to run both: one
+credential, one state volume, one name, and HTTPS from Tailscale
+Serve. Open `https://protowx-<branch>.<domain>/`. The transcription
+is on `:8443`. The trace viewer, Jaeger on `:8445`, joins with the
+traces.
 [deploy/compose/README.md](../../deploy/compose/README.md) is the stack:
 the services, the routes and the images. This page is the credential,
 `TS_DOMAIN`, kernel mode and the gotchas.

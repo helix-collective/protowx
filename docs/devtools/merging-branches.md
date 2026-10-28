@@ -104,7 +104,7 @@ task web:regression -- crud
 # changed shot to docs/changes/visual-diff/<descr>/. A person decides this, not an agent.
 task baselines -- <descr>
 
-# The regression suite on the docker stack: bff, myw and Jaeger.
+# The regression suite on the docker stack: the bff image, no tailnet.
 # It starts the compose project protowx-regression and stops it after, on green and on red.
 task web:regression:stack
 
@@ -302,7 +302,7 @@ that fails.
 | `web:typecheck`        | `task web:typecheck`                                            | a type error that no test reaches             |
 | `test`                 | `task test`                                                     | Go, the engine as wasm, jsdom and the browser |
 | `web:regression`       | `task web:regression`                                           | a page that looks or acts other than before   |
-| `web:regression:stack` | `task web:regression:stack`, on docker                          | the same, for the report's traces in Jaeger   |
+| `web:regression:stack` | `task web:regression:stack`, on docker                          | the same, on the image that the stack runs    |
 | `md-table-fmt`         | `repo-tools md-table-fmt -n -q` over the tracked Markdown files | a table the commit hook would refuse          |
 | `plan-report`          | `md-tmpl` over a copy of `docs/features/README.md`, compared    | a plan table the commit hook would rewrite    |
 | `clean tree`           | `git status --porcelain`, before and after, compared            | a step that changed, added or deleted a file  |
@@ -349,11 +349,11 @@ A red `web:regression` is one of three things:
   plan. Do not raise the threshold to hide it.
 
 The stack's scenarios run in a second config, on the docker images of
-`deploy/compose`, with `myw` and Jaeger beside `bff` and no tailnet:
+`deploy/compose`: the `bff` image, with no tailnet:
 
 ```sh
 task web:regression:stack                   # build, start, play, stop
-task web:regression:stack -- report         # one scenario
+task web:regression:stack -- crud           # one scenario
 ```
 
 The gate runs it after `web:regression`. It needs docker on the
@@ -417,7 +417,7 @@ and `results/` under `web/regression/`; git ignores both, so the
 - **The suite's ports are fixed.** The offline project uses
   `127.0.0.1:8098`, and the connected project `8099`. A second gate on
   the same machine at the same time is red at `web:regression`. The
-  stack uses `8097` and `8096`, and the compose project
+  stack uses `8094`, and the compose project
   `protowx-regression`, so it is red at `web:regression:stack` too.
 
 ## 6. With an agent

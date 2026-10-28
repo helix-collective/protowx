@@ -8,6 +8,16 @@ commit. The brief product log is [../changelog.md](../changelog.md).
 
 ## 2026-10-28
 
+- **Added.** The compose stack, `deploy/compose/`: `bff` and `myw`
+  behind one tailnet node, `protowx-<branch>`. `task compose:up`
+  starts it, with `TS_AUTHKEY` and `TS_DOMAIN` in `.envrc.local`;
+  `task compose:down` stops it. The page is on `https://<node>/`, and
+  `myw` on `:8443`. Your calculations are in the volume `store`. The
+  trace viewer joins later. See
+  [running-the-stack.md](running-the-stack.md).
+- **Added.** `task web:regression:stack`, the regression suite on the
+  `bff` image, with no tailnet, on `127.0.0.1:8094`. `task gate` runs
+  it, so the gate needs docker on the machine.
 - **Added.** `services/myw`, My Whisper, the transcription service of
   **dictate**. `task myw:model` downloads the model once, 142 MB.
   `task myw:serve` serves on `127.0.0.1:8090`; then `task

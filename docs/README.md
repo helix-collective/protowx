@@ -43,7 +43,7 @@ and how an expectation is renewed.
 is the flake: the dev shell, the pinned tools, and how to build one
 from a local checkout.
 [devtools/compose-tailscale.md](devtools/compose-tailscale.md) runs
-`bff`, `myw` and Jaeger in docker behind one tailnet node: the
+`bff` and `myw` in docker behind one tailnet node: the
 credential, `TS_DOMAIN`, and kernel mode.
 [kb/go-style.md](kb/go-style.md) is the house style for Go.
 

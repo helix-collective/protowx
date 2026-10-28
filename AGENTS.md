@@ -367,13 +367,15 @@ day. `docs/product/AGENTS.md` says what each holds.
 
 ## Docs that quote the code
 
-Update these in the same commit as the code they quote. Each page is
-under `docs/product/`, and each quotes names and messages verbatim.
+Update these in the same commit as the code they quote. A page is
+under `docs/product/` unless its row names a path, and each quotes
+names, messages or paths verbatim.
 
 | page                                             | quotes                                              |
 |--------------------------------------------------|-----------------------------------------------------|
 | `user_manual/guides/evaluating-an-expression.md` | the errors of `engine/eval/`; the words of the form |
 | `admin_manual/traces.md`                         | the span names of `services/bff/traces.go`          |
+| `readingList` in `web/apps/app/src/bugReport.ts` | the path of every file it names                     |
 
 ## Screenshots
 
@@ -395,7 +397,7 @@ screenshot shows re-shoots it. A stale picture teaches the wrong page.
 - **The shots and mockups under `docs/features/`** record a decision.
   Leave them as they were taken.
 - **The regression baselines change with the page.** A baseline is
-  `web/regression/scenarios/<name>.json-snapshots/<shot>-linux.png`.
+  `web/regression/scenarios/<name>.json-snapshots/<server>/<shot>-linux.png`.
   A change that alters what a baseline shows takes it again, with
   `task baselines -- <descr>`, in the same commit, as a manual
   screenshot is. It runs both configs with `--update-snapshots` and

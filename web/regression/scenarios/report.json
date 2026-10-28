@@ -1,0 +1,24 @@
+{
+  "title": "report: record a save, stop, and submit the feedback",
+  "server": "connected",
+  "steps": [
+    { "click": "[data-term=record]" },
+    { "see": "[data-term=record]", "text": "stop · 0 changes" },
+    { "click": "[data-term=new]" },
+    { "type": "rent", "into": "[data-term=name]" },
+    { "type": "a * 12", "into": "[data-term=text]" },
+    { "click": "[data-term=save]" },
+    { "see": "[data-term=record]", "text": "stop · 1 change" },
+    { "shot": "recording", "of": "[data-term=bar]" },
+    { "click": "[data-term=record]" },
+    { "see": "[data-term=feedback-summary]", "text": "1 change, 2 messages" },
+    { "type": "the new row", "into": "[data-term=title]" },
+    { "type": "I saved rent, and its row came last.", "into": "[data-term=message]" },
+    { "shot": "dialog", "of": "[data-term=feedback-dialog]" },
+    { "click": "[data-term=submit]" },
+    { "see": "[data-term=saved]" },
+    { "click": "[data-term=close]" },
+    { "see": "[data-term=status-line]", "text": "feedback saved" },
+    { "shot": "end" }
+  ]
+}

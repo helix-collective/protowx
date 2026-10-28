@@ -1,0 +1,20 @@
+{
+  "title": "evaluate: a value, an evaluation error, and a parse error under the text",
+  "server": ["offline", "connected"],
+  "steps": [
+    { "click": "[data-term=row]", "nth": 0 },
+    { "click": "[data-term=evaluate]" },
+    { "see": "[data-term=value]", "text": "8" },
+    { "see": "[data-term=printed-expression]", "text": "((x + 3) * y)" },
+    { "shot": "value", "of": "[data-term=result]" },
+    { "click": "[data-term=row]", "nth": 2 },
+    { "click": "[data-term=evaluate]" },
+    { "see": "[data-term=evaluation-error]", "text": "division by zero: 10 / 0" },
+    { "shot": "division", "of": "[data-term=result]" },
+    { "type": "10 / (2", "into": "[data-term=text]" },
+    { "click": "[data-term=evaluate]" },
+    { "see": "[data-term=parse-error]", "text": "^ Line 1, col 8: match failed" },
+    { "shot": "parse-error", "of": "[data-term=form]" },
+    { "shot": "end" }
+  ]
+}

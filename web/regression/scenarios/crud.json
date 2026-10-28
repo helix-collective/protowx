@@ -1,0 +1,28 @@
+{
+  "title": "crud: a new calculation saved, opened, renamed and deleted",
+  "server": ["offline", "connected"],
+  "steps": [
+    { "see": "[data-term=row]", "count": 3 },
+    { "click": "[data-term=new]" },
+    { "type": "rent", "into": "[data-term=name]" },
+    { "type": "a * 12", "into": "[data-term=text]" },
+    { "click": "[data-term=add]" },
+    { "type": "a", "into": "[data-term=bindings] .binding-name" },
+    { "type": "900", "into": "[data-term=bindings] .binding-value" },
+    { "click": "[data-term=save]" },
+    { "see": "[data-term=row]", "count": 4 },
+    { "see": "[data-term=row][aria-current=true]", "text": "rent" },
+    { "shot": "saved", "of": "[data-term=calculation-list]" },
+    { "click": "[data-term=row]", "nth": 0 },
+    { "click": "[data-term=row]", "nth": 3 },
+    { "see": "[data-term=name]" },
+    { "type": "rent a year", "into": "[data-term=name]" },
+    { "click": "[data-term=save]" },
+    { "see": "[data-term=row]", "nth": 3, "text": "rent a year" },
+    { "shot": "renamed", "of": "[data-term=form]" },
+    { "click": "[data-term=delete]" },
+    { "see": "[data-term=row]", "count": 3 },
+    { "see": "[data-term=status-line]", "text": "deleted \"rent a year\"" },
+    { "shot": "end" }
+  ]
+}

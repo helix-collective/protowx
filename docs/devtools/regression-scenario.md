@@ -37,7 +37,7 @@ overwrite a scenario. A stub has a `todo` string and no steps:
 as a skipped test whose title starts `todo:`:
 
 ```text
-  -  1 [offline] › regression/scenarios.spec.ts:54:7 › todo: crud [crud] @offline
+  -  1 [offline] › regression/scenarios.spec.ts:45:9 › todo: crud [crud] offline @offline
 
   1 skipped
 ```
@@ -62,13 +62,13 @@ This is one gesture, a new calculation, in the shape of
 {
   "title": "crud: a new calculation, saved, is a row of the list",
   "steps": [
-    { "see": "[data-term=calculation-list] [role=row]", "count": 3 },
+    { "see": "[data-term=row]", "count": 3 },
     { "click": "[data-term=new]" },
     { "type": "rent", "into": "[data-term=form] [name=name]" },
     { "type": "a * 12", "into": "[data-term=form] [name=text]" },
     { "click": "[data-term=save]" },
-    { "see": "[data-term=calculation-list] [role=row]", "count": 4 },
-    { "see": "[data-term=calculation-list] [role=row]", "nth": 3, "text": "rent" },
+    { "see": "[data-term=row]", "count": 4 },
+    { "see": "[data-term=row]", "nth": 3, "text": "rent" },
     { "shot": "saved", "of": "[data-term=form]" },
     { "shot": "end" }
   ]
@@ -116,7 +116,7 @@ task web:regression -- <name>
 Give `=all`. A bare `--update-snapshots` updates a shot only when it
 differs by more than the threshold, so it can keep a dev server
 picture. The second command must be green. The baselines are
-`web/regression/scenarios/<name>.json-snapshots/<shot>-linux.png`.
+`web/regression/scenarios/<name>.json-snapshots/<server>/<shot>-linux.png`.
 
 Look at each baseline before the commit. It must show what the guide
 says. Commit the scenario, its baselines, and each `data-term` and

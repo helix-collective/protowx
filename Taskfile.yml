@@ -91,12 +91,12 @@ tasks:
         echo "ohm-go pinned at ${rev:0:7}; commit flake.lock, and flake.nix if the vendorHash moved"
 
   test:
-    # web:test joins in phase 4 of docs/features/001-calculator/plan.md,
-    # and myw:test in phase 5. A dep on a task that does not exist yet
-    # fails the run.
+    # myw:test joins in phase 5 of docs/features/001-calculator/plan.md.
+    # A dep on a task that does not exist yet fails the run.
     deps:
       - bff:test
       - calc:test
+      - web:test
 
   gate:
     desc: "Every check a merge needs, in order, to the first failure; the last line is gate: green or gate: red at <step>"
@@ -139,7 +139,8 @@ tasks:
         run web:typecheck task web:typecheck
         run test task test
         run web:regression task web:regression
-        run web:regression:stack stack
+        # The stack step joins with the stack, in phase 6 of the plan:
+        # run web:regression:stack stack
         run md-table-fmt tables
         run plan-report plan_table
         step="clean tree"
@@ -276,5 +277,6 @@ tasks:
         echo "$descr" | grep -Eqx '[a-z0-9]+(-[a-z0-9]+)*' || no "give a kebab-case description: task baselines -- <descr> [name...]"
         shift
         task web:regression -- "$@" --update-snapshots
-        task web:regression:stack -- "$@" --update-snapshots
+        # The stack's suite joins in phase 6 of the plan:
+        # task web:regression:stack -- "$@" --update-snapshots
         cd web && node regression/visualDiff.mjs "$descr"

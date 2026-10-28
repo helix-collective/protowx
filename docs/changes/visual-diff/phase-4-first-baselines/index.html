@@ -1,0 +1,118 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>visual diff · phase-4-first-baselines</title>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 16px 24px; color: #111; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin: 32px 0 4px; border-top: 2px solid #ddd; padding-top: 12px; }
+  h2 small { font-weight: 400; color: #666; margin-left: 8px; }
+  h3 { font-size: 13px; color: #444; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: .04em; }
+  nav a { margin-right: 12px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { font-size: 12px; color: #555; margin-bottom: 4px; }
+  .row img { border: 1px solid #ccc; image-rendering: pixelated; max-width: 100%; }
+  img.whole { max-width: 100%; border: 1px solid #ccc; }
+  .swap { position: relative; display: inline-block; }
+  .swap img.new { position: absolute; left: 0; top: 0; opacity: 0; }
+  .swap:hover img.new, body.blink .swap img.new { opacity: 1; }
+  .swap .tag { position: absolute; left: 8px; top: 8px; background: #111c; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .swap:hover .tag::after, body.blink .swap .tag::after { content: ' → new'; }
+</style>
+<h1>visual diff · phase-4-first-baselines <small>17 baselines, main, 2026-10-28 18:30, HEAD 0e54af545f83</small></h1>
+<p>Each shot: the changed region zoomed from the old and the new baseline, then the changed pixels in magenta.
+Under it, the whole old baseline; hover it and the new one takes its place.
+The old baseline is the one in git's index; each shot names the commit that wrote it.
+The new baseline is the one in the worktree; the commit that adds this page holds it.
+<label><input type="checkbox" id="blink"> blink old/new every second</label></p>
+<nav><a href="#crud--connected-end">crud/connected/end</a><a href="#crud--connected-renamed">crud/connected/renamed</a><a href="#crud--connected-saved">crud/connected/saved</a><a href="#crud--offline-end">crud/offline/end</a><a href="#crud--offline-renamed">crud/offline/renamed</a><a href="#crud--offline-saved">crud/offline/saved</a><a href="#evaluate--connected-division">evaluate/connected/division</a><a href="#evaluate--connected-end">evaluate/connected/end</a><a href="#evaluate--connected-parse-error">evaluate/connected/parse-error</a><a href="#evaluate--connected-value">evaluate/connected/value</a><a href="#evaluate--offline-division">evaluate/offline/division</a><a href="#evaluate--offline-end">evaluate/offline/end</a><a href="#evaluate--offline-parse-error">evaluate/offline/parse-error</a><a href="#evaluate--offline-value">evaluate/offline/value</a><a href="#report--connected-dialog">report/connected/dialog</a><a href="#report--connected-end">report/connected/end</a><a href="#report--connected-recording">report/connected/recording</a></nav>
+
+<section id="crud--connected-end">
+  <h2>crud / connected/end <small>new · 1600×900</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--connected-end-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="crud--connected-renamed">
+  <h2>crud / connected/renamed <small>new · 560×505</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--connected-renamed-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="crud--connected-saved">
+  <h2>crud / connected/saved <small>new · 260×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--connected-saved-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="crud--offline-end">
+  <h2>crud / offline/end <small>new · 1600×900</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--offline-end-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="crud--offline-renamed">
+  <h2>crud / offline/renamed <small>new · 560×505</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--offline-renamed-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="crud--offline-saved">
+  <h2>crud / offline/saved <small>new · 260×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="crud--offline-saved-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--connected-division">
+  <h2>evaluate / connected/division <small>new · 420×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--connected-division-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--connected-end">
+  <h2>evaluate / connected/end <small>new · 1600×900</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--connected-end-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--connected-parse-error">
+  <h2>evaluate / connected/parse-error <small>new · 560×505</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--connected-parse-error-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--connected-value">
+  <h2>evaluate / connected/value <small>new · 420×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--connected-value-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--offline-division">
+  <h2>evaluate / offline/division <small>new · 420×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--offline-division-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--offline-end">
+  <h2>evaluate / offline/end <small>new · 1600×900</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--offline-end-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--offline-parse-error">
+  <h2>evaluate / offline/parse-error <small>new · 560×505</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--offline-parse-error-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="evaluate--offline-value">
+  <h2>evaluate / offline/value <small>new · 420×856</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="evaluate--offline-value-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="report--connected-dialog">
+  <h2>report / connected/dialog <small>new · 680×471</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="report--connected-dialog-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="report--connected-end">
+  <h2>report / connected/end <small>new · 1600×900</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="report--connected-end-new.png" alt="new baseline"></figure>
+</section>
+
+<section id="report--connected-recording">
+  <h2>report / connected/recording <small>new · 1600×44</small></h2>
+  <figure><figcaption>the new baseline; it had none before</figcaption><img class="whole" src="report--connected-recording-new.png" alt="new baseline"></figure>
+</section>
+<script>
+  const box = document.getElementById('blink'); let t;
+  box.onchange = () => { clearInterval(t); document.body.classList.remove('blink');
+    if (box.checked) t = setInterval(() => document.body.classList.toggle('blink'), 1000); };
+</script>

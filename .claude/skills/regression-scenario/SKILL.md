@@ -39,7 +39,7 @@ feature:new` writes one named for the branch. A run prints it as a
 skipped test whose title starts `todo:`:
 
 ```text
-  -  1 [offline] › regression/scenarios.spec.ts:54:7 › todo: crud [crud] @offline
+  -  1 [offline] › regression/scenarios.spec.ts:45:9 › todo: crud [crud] offline @offline
 ```
 
 `task feature:refresh` prints `scenario: todo <branch>` for it. With
@@ -142,7 +142,7 @@ Then play the scenario.
 - **A `shot` with no baseline does not stop the run.** Each one prints
   `A snapshot doesn't exist at ..., writing actual.`, and the run is
   red at its end. Playwright writes the picture to
-  `web/regression/scenarios/<name>.json-snapshots/<shot>-linux.png`
+  `web/regression/scenarios/<name>.json-snapshots/<server>/<shot>-linux.png`
   and to `results/`.
 - **The second run is green** when the steps are right: the baselines
   of the first run are there now. Green on the second run is the end

@@ -91,11 +91,12 @@ tasks:
         echo "ohm-go pinned at ${rev:0:7}; commit flake.lock, and flake.nix if the vendorHash moved"
 
   test:
-    # myw:test joins in phase 5 of docs/features/001-calculator/plan.md.
-    # A dep on a task that does not exist yet fails the run.
+    # myw:test needs the model, so a first run downloads it (142 MB);
+    # task myw:model is the download alone.
     deps:
       - bff:test
       - calc:test
+      - myw:test
       - web:test
 
   gate:

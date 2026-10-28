@@ -1,6 +1,81 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
+#
+# My Whisper, the dictation's transcription service: whisper.cpp in Go
+# through kronk. See README.md. It needs whisper.cpp's libraries and
+# the libffi that kronk's bindings open at startup. The dev shell
+# exports both as PROTOWX_WHISPER_LIBS and PROTOWX_LIBFFI; outside it,
+# these build them from the flake's own nixpkgs.
 
 version: '3'
 
-# Empty until its phase of docs/features/001-calculator/plan.md fills it.
-tasks: {}
+vars:
+  # ggml-base.en, pinned by its hash: the model the PRD chooses.
+  MODEL_URL: https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
+  MODEL_SHA256: a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002
+  MODEL: source/model/ggml-model.bin
+  FIXTURE: testdata/narration.wav
+  # The dev shell exports both. Without the shell, nix builds the
+  # packages from the flake's lock; a failed build is seen, and is not
+  # turned into /lib.
+  WHISPER_LIBS:
+    sh: echo "${PROTOWX_WHISPER_LIBS:-$(nix build --no-link --print-out-paths --inputs-from ../.. nixpkgs#whisper-cpp)/lib}"
+  LIBFFI:
+    sh: echo "${PROTOWX_LIBFFI:-$(nix build --no-link --print-out-paths --inputs-from ../.. nixpkgs#libffi.out)/lib}"
+
+env:
+  # kronk's bindings dlopen libffi when the process starts; NixOS has it
+  # on no default path.
+  LD_LIBRARY_PATH: '{{.LIBFFI}}'
+  # whisper.cpp's OpenMP threads spin while they wait; on a busy machine
+  # four spinning threads took 22 s where two took 1.3 s. Read at load,
+  # so it is set here and not from Go.
+  OMP_WAIT_POLICY: passive
+
+tasks:
+  model:
+    desc: Download ggml-base.en (142 MB) for -tags embedmodel, and check its hash
+    status:
+      - echo '{{.MODEL_SHA256}}  {{.MODEL}}' | sha256sum -c --quiet
+    cmds:
+      - curl -fL --retry 3 -o '{{.MODEL}}.part' '{{.MODEL_URL}}'
+      - echo '{{.MODEL_SHA256}}  {{.MODEL}}.part' | sha256sum -c --quiet
+      - mv '{{.MODEL}}.part' '{{.MODEL}}'
+
+  build:
+    desc: The service with the model built in (213 MB)
+    deps: [model]
+    silent: true
+    cmds:
+      - go build -tags embedmodel -o myw .
+
+  run:
+    desc: "myw passing args"
+    deps: [build]
+    silent: true
+    cmds:
+      - ./myw {{.CLI_ARGS}}
+
+  serve:
+    desc: "Serve My Whisper on 127.0.0.1:8090 for the page on bff's loopback origins; task myw:serve -- --origin ..."
+    deps: [build]
+    cmds:
+      - ./myw serve --libs '{{.WHISPER_LIBS}}' {{.CLI_ARGS}}
+
+  transcribe:
+    desc: "Transcribe the fixture: kronk's model package, the shell's whisper.cpp, the built-in model"
+    deps: [build]
+    cmds:
+      - ./myw transcribe --libs '{{.WHISPER_LIBS}}' {{.CLI_ARGS}} '{{.FIXTURE}}'
+
+  stream:
+    desc: Play the fixture into a live stream in real time, and print each partial and final
+    deps: [build]
+    cmds:
+      - ./myw stream --libs '{{.WHISPER_LIBS}}' {{.CLI_ARGS}} '{{.FIXTURE}}'
+
+  test:
+    desc: Go tests and vet; the transcription tests run on the shell's whisper.cpp and the model
+    deps: [model]
+    cmds:
+      - PROTOWX_WHISPER_LIBS='{{.WHISPER_LIBS}}' PROTOWX_WHISPER_MODEL="$PWD/{{.MODEL}}" go test ./...
+      - go vet ./...

@@ -48,6 +48,9 @@ credential, `TS_DOMAIN`, and kernel mode.
 [devtools/fresh-clone.md](devtools/fresh-clone.md) checks that a clone
 of this repository alone builds and passes its gate: the two greps,
 then `task gate`.
+[devtools/setting-up-repos.md](devtools/setting-up-repos.md) makes the
+four GitHub repositories with `gh repo create`, in an org you name
+once.
 [kb/go-style.md](kb/go-style.md) is the house style for Go.
 
 ## The compass

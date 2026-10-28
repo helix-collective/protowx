@@ -1,0 +1,19 @@
+{
+  "name": "protowx-web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The calculator's page: the engine's client, the Solid components, the app and the regression suite",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "pnpm -r --if-present run typecheck"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "pngjs": "7.0.0",
+    "vitest": "catalog:"
+  }
+}

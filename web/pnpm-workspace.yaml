@@ -1,0 +1,31 @@
+# The workspace members. pnpm does not read package.json's "workspaces"
+# field, so this file is the one place the set is declared.
+packages:
+  - packages/*
+  - apps/*
+
+# pnpm's node_modules is not flat: a package sees only what it declares, so
+# the shared toolchain is a devDependency of every package that uses it. The
+# versions live here, as one place to bump them; members spell it "catalog:".
+catalog:
+  '@types/node': ^26.6.4
+  solid-js: ^1.9.17
+  typescript: ^5.9.3
+  vite: ^7.0.0
+  vite-plugin-solid: ^2.11.14
+  # 4.1.11 is a floor, not a preference: everything below it is
+  # GHSA-82fw-gwwq-j7x9 (@vitest/mocker path traversal), and vitest 3
+  # reaches tinypool 1.x, which is GHSA-5gmw-xhrv-c9v3 and one more, both
+  # critical. vitest 4 dropped tinypool altogether, so moving the catalog
+  # clears all four where an `overrides:` block could not: pnpm applies an
+  # override to a transitive dependency but not to a direct one written
+  # `catalog:`, so overriding @vitest/mocker and tinypool patched the two
+  # of them *inside* vitest 3.2.7 and left vitest itself on the vulnerable
+  # version. Keep the fix in the catalog. `pnpm audit` is `task web:audit`.
+  vitest: 4.1.11
+
+# A dependency's install scripts do not run unless it is listed here.
+# esbuild's postinstall is what puts its platform binary in place, and vite
+# will not start without it. `pnpm approve-builds` maintains this.
+allowBuilds:
+  esbuild: true

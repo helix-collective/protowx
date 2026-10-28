@@ -1,0 +1,25 @@
+{
+  "name": "@protowx/client",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The engine's client: the wasm engine in a Web Worker, the HTTP transport, the factory, the log and the typed client for api.adl",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker.ts",
+    "./adl/*": "./src/adl/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "base64-js": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

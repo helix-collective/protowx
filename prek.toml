@@ -2,9 +2,13 @@
 # See https://prek.j178.dev for more information.
 #:schema https://www.schemastore.org/prek.json
 
+# The generated TypeScript of spec/*.adl is left as adlc writes it:
+# task calc:adl-ts writes it again on each web:test, and a hook's fix
+# would show as a change in the gate's clean tree check.
 exclude = """(?x)^(
   .prompts |
-  .prompt-history
+  .prompt-history |
+  web/packages/client/src/adl/
 )"""
 
 [[repos]]

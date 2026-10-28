@@ -2,5 +2,82 @@
 
 version: '3'
 
-# Empty until its phase of docs/features/001-calculator/plan.md fills it.
-tasks: {}
+# The web: tasks run in web/. web/AGENTS.md is the map of the packages,
+# and web/regression/README.md the regression suite.
+tasks:
+
+  install:
+    desc: pnpm install across the workspace
+    cmds:
+      - pnpm install
+
+  gen:
+    desc: Regenerate what the page reads from spec/ and engine/, the TypeScript types and the wasm engine
+    cmds:
+      - task: :calc:adl-ts
+      - task: :calc:wasm
+
+  test:
+    desc: Vitest across the workspace, against the real wasm
+    deps: [gen]
+    cmds:
+      - pnpm test
+
+  audit:
+    desc: pnpm audit the workspace for known vulnerabilities
+    cmds:
+      - pnpm audit {{.CLI_ARGS}}
+
+  typecheck:
+    desc: tsc --noEmit in every package
+    # The wasm build is not needed to typecheck, but the generated types
+    # are: they are tracked, so a fresh clone has them.
+    cmds:
+      - pnpm -r --if-present run typecheck
+
+  dev:
+    desc: "The page on Vite's dev server, offline; task web:dev -- --debug for Vite's debug log"
+    deps: [gen]
+    cmds:
+      - pnpm --filter @protowx/app run dev {{.CLI_ARGS}}
+
+  build:
+    desc: Static dist/ for the page; SOURCEMAP=true writes a .map beside each bundle
+    deps: [gen]
+    vars:
+      SOURCEMAP: '{{.SOURCEMAP | default "false"}}'
+    cmds:
+      - pnpm --filter @protowx/app run build {{if eq .SOURCEMAP "true"}}--sourcemap{{end}}
+
+  regression:
+    desc: "The regression suite on dist/: task web:regression -- [name...] [--project connected] [--update-snapshots]"
+    # web/regression/README.md is the page. A bare word that names a
+    # scenario, regression/scenarios/<name>.json, becomes a --grep for
+    # its test; every other argument goes to playwright as it is.
+    deps: [build]
+    cmds:
+      - task: playwright
+        vars:
+          CONFIG: regression/playwright.config.ts
+
+  playwright:
+    internal: true
+    silent: true
+    requires:
+      vars: [CONFIG]
+    cmds:
+      - |
+        names=""
+        rest=""
+        for a in {{.CLI_ARGS}}; do
+          if [ -f "regression/scenarios/$a.json" ]; then
+            names="$names${names:+|}$a"
+          else
+            rest="$rest $a"
+          fi
+        done
+        if [ -n "$names" ]; then
+          pnpm exec playwright test -c {{.CONFIG}} --grep "\[($names)\]" $rest
+        else
+          pnpm exec playwright test -c {{.CONFIG}} $rest
+        fi

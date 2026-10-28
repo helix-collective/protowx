@@ -28,7 +28,7 @@ tasks:
           -I {{.SPEC_DIR}} \
           -O {{.CLIENT_DIR}}/src/adl \
           -R runtime \
-          $(cd {{.SPEC_DIR}} && ls *.adl)
+          {{.SPEC_DIR}}/*.adl
 
   wasm:
     desc: Build the js/wasm engine into web/packages/client/wasm with the Go glue beside it

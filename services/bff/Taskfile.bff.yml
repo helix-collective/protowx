@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+# Empty until its phase of docs/features/001-calculator/plan.md fills it.
+tasks: {}

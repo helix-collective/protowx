@@ -1,0 +1,31 @@
+# Copy to .envrc.local to build a tool from a local checkout instead of
+# the commit flake.lock pins: the git hooks from repo-tools, and ohm-cli
+# from ohm-go. Each line is one tool; comment out a line to go back to
+# its pin.
+#
+#   cp .envrc.local.example .envrc.local && direnv reload
+#
+# The shell banner then reads "LOCAL, from REPO_TOOLS_DEV" and "LOCAL,
+# from OHM_GO_DEV". Delete .envrc.local and reload to go back to the
+# pins.
+#
+# .envrc resolves these paths from the repository root, whatever
+# directory you are in, because direnv always reads .envrc from beside
+# itself. The values below are the protowx-workspace layout, where
+# the repositories are siblings. Use an absolute path for any other
+# layout.
+#
+# docs/devtools/nix-custom-dev-tools.md section 8 is the page.
+#
+# In the workspace, .envrc points GOWORK at ../go.work. Set GOWORK
+# here to turn that off for this checkout: "$PWD/go.work" keeps this
+# checkout's own file, and "off" reads no go.work at all.
+#
+# TS_AUTHKEY and TS_DOMAIN are for the compose stack's tailnet node;
+# docs/devtools/compose-tailscale.md is the page.
+
+# export GOWORK="$PWD/go.work"
+export REPO_TOOLS_DEV=../tools
+export OHM_GO_DEV=../ohm-go
+export TS_AUTHKEY=tskey-auth-xxxx
+export TS_DOMAIN=tailbXXXXX.ts.net

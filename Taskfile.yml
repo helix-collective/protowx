@@ -1,0 +1,279 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+# Each include is the task file of one directory, and its tasks run
+# there. A file is empty until the phase that fills it.
+includes:
+  # The server: the page, /api/calc, the report and the traces.
+  bff:
+    taskfile: ./services/bff/Taskfile.bff.yml
+    dir: ./services/bff
+  # The calculator's engine: the calc: tasks run in engine/ and read
+  # ../spec/, the grammar and the ADL files.
+  calc:
+    taskfile: ./engine/Taskfile.calc.yml
+    dir: ./engine
+  # The compose stack: bff, myw and Jaeger behind one tailnet node; see
+  # deploy/compose/README.md.
+  compose:
+    taskfile: ./deploy/compose/Taskfile.compose.yml
+    dir: ./deploy/compose
+  # My Whisper, the dictation's transcription service; see its README.md.
+  myw:
+    taskfile: ./services/myw/Taskfile.myw.yml
+    dir: ./services/myw
+  web:
+    taskfile: ./web/Taskfile.web.yml
+    dir: ./web
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+    silent: true
+
+  gen:
+    cmds:
+      - task calc:goadlc
+      - task calc:adl-ts
+      - task calc:gen_visitor
+      - task calc:ohm2wasm
+
+  tidy:
+    desc: Run go mod tidy in each Go module of the workspace
+    vars:
+      # go.work names the modules, so the list never goes stale here.
+      MODULE_DIRS:
+        sh: go list -m -f '{{`{{.Dir}}`}}'
+    cmds:
+      - for:
+          var: MODULE_DIRS
+          split: "\n"
+        cmd: cd '{{.ITEM}}' && go mod tidy
+
+  nix:update-repo-tools:
+    desc: Pin flake.lock to the repo-tools on main and reload the shell; commit flake.lock after
+    # The git hooks and the Claude Code Stop hook call repo-tools from the
+    # shell, so the reload is what puts the new build in front of them.
+    # REPO_TOOLS_DEV, when set, still builds the local checkout over the lock.
+    cmds:
+      - nix flake update repo-tools
+      - direnv reload
+      - |
+        rev=$(nix eval --raw --impure --expr '(builtins.fromJSON (builtins.readFile ./flake.lock)).nodes.repo-tools.locked.rev')
+        echo "repo-tools pinned at ${rev:0:7}; commit flake.lock"
+
+  nix:update-ohm-cli:
+    desc: Pin flake.lock to the ohm-go on main, fix ohm-cli's vendorHash, reload the shell; commit flake.lock and flake.nix after
+    # ohm-cli is built in flake.nix from the ohm-go input, and its
+    # vendorHash changes whenever ohm-cli's go.sum does. The build
+    # reports the right hash on a mismatch, so the task writes it in and
+    # builds again. OHM_GO_DEV, when set, still builds the local
+    # checkout over the lock.
+    cmds:
+      - nix flake update ohm-go
+      - |
+        if ! out=$(nix build .#ohm-cli --no-link 2>&1); then
+          got=$(printf '%s\n' "$out" | sed -n 's/^ *got: *//p' | head -n 1)
+          if [ -z "$got" ]; then
+            printf '%s\n' "$out" >&2
+            exit 1
+          fi
+          sed -i.bak "/mkOhmCli = /,/vendorHash/ s|vendorHash = \"sha256-[^\"]*\"|vendorHash = \"$got\"|" flake.nix
+          rm flake.nix.bak
+          echo "ohm-cli vendorHash is now $got"
+          nix build .#ohm-cli --no-link
+        fi
+      - direnv reload
+      - |
+        rev=$(nix eval --raw --impure --expr '(builtins.fromJSON (builtins.readFile ./flake.lock)).nodes.ohm-go.locked.rev')
+        echo "ohm-go pinned at ${rev:0:7}; commit flake.lock, and flake.nix if the vendorHash moved"
+
+  test:
+    deps:
+      - web:test
+      - bff:test
+      - calc:test
+      - myw:test
+
+  gate:
+    desc: "Every check a merge needs, in order, to the first failure; the last line is gate: green or gate: red at <step>"
+    # docs/devtools/merging-branches.md is the page. A step is one `run <name> <command>` line, so a new
+    # suite is one new line. The last two steps are the prek hooks, run
+    # early, with the hooks' excludes. The gate changes no file:
+    # `git status --porcelain` before and after must be equal.
+    silent: true
+    cmds:
+      - |
+        step=start
+        trap 'if [ "$step" = done ]; then echo "gate: green"; else echo "gate: red at $step"; fi' EXIT
+        run() {
+          step=$1
+          shift
+          echo "gate: $step"
+          "$@" || exit 1
+        }
+        tables() {
+          repo-tools md-table-fmt -n -q $(git ls-files '*.md' | grep -Ev '^(\.prompts|\.prompt-history|iac)/')
+        }
+        plan_table() {
+          tmp=$(mktemp -d)
+          cp docs/features/README.md "$tmp/README.md"
+          md-tmpl -w -d docs/features "$tmp/README.md" >/dev/null
+          cmp -s "$tmp/README.md" docs/features/README.md
+          same=$?
+          rm -r "$tmp"
+          [ "$same" = 0 ] || echo "docs/features/README.md: the plan table is stale; run task plan-report"
+          return $same
+        }
+        stack() {
+          if ! command -v docker >/dev/null; then
+            echo "docker is not in the dev shell; the regression stack needs it on the machine"
+            return 1
+          fi
+          task web:regression:stack
+        }
+        before=$(git status --porcelain)
+        run web:typecheck task web:typecheck
+        run test task test
+        run web:regression task web:regression
+        run web:regression:stack stack
+        run md-table-fmt tables
+        run plan-report plan_table
+        step="clean tree"
+        after=$(git status --porcelain)
+        if [ "$before" != "$after" ]; then
+          echo "the gate changed the tree; git status --porcelain is now:"
+          echo "$after"
+          exit 1
+        fi
+        step=done
+
+  # The three commands of a branch: new, refresh, finish. Each is
+  # deterministic; docs/devtools/merging-branches.md is the page.
+  feature:new:
+    desc: "On main: reserve the next feature number, write a todo scenario, push, add the worktree ../protowx-<name>; task feature:new -- <name>"
+    silent: true
+    cmds:
+      - |
+        set -eu
+        set -- {{.CLI_ARGS}}
+        name=${1:-}
+        no() { echo "feature:new: $*"; exit 1; }
+        echo "$name" | grep -Eqx '[a-z0-9]+(-[a-z0-9]+)*' || no "give a kebab-case name: task feature:new -- <name>"
+        [ "$(git branch --show-current)" = main ] || no "run on main, in its worktree"
+        [ -z "$(git status --porcelain --untracked-files=no)" ] || no "the tree has changes; commit or stash them first"
+        git pull -q --ff-only origin main
+        ! ls -d docs/features/[0-9][0-9][0-9]-"$name" >/dev/null 2>&1 || no "the feature $name exists"
+        ! git rev-parse -q --verify "refs/heads/$name" >/dev/null || no "the branch $name exists"
+        last=$(ls docs/features | sed -n 's/^\([0-9][0-9][0-9]\)-.*/\1/p' | sort | tail -1)
+        feature=$(printf %03d $(expr $last + 1))-$name
+        mkdir docs/features/$feature && printf '# %s\n\nStatus: the number is reserved. Nothing is written yet.\n' "$name" > docs/features/$feature/prd.md
+        awk -v row="| \`$feature\` | prd | | | | |" 'NR==FNR { if (/^\| `[0-9][0-9][0-9]-/) last=FNR; next } { print } FNR==last { print row }' docs/features/README.md docs/features/README.md > docs/features/README.md.new
+        mv docs/features/README.md.new docs/features/README.md && { repo-tools md-table-fmt -q docs/features/README.md || repo-tools md-table-fmt -n -q docs/features/README.md; }
+        task feature:scenario -- "$name"
+        git add docs/features/$feature/prd.md docs/features/README.md web/regression/scenarios/$name.json
+        git commit -q -m "features/$feature: reserve the number"
+        git push -q origin main || { git reset -q --keep HEAD~1; no "the push was refused, and the commit is undone; run feature:new again for the next number"; }
+      - task: feature:worktree
+        vars:
+          NAME: '{{.CLI_ARGS}}'
+
+  feature:worktree:
+    internal: true
+    silent: true
+    cmds:
+      - |
+        set -eu
+        wt=../protowx-{{.NAME}}
+        git worktree add -q -b {{.NAME}} "$wt"
+        echo "feature:new: the number is reserved on main and pushed; the worktree $wt is on the branch {{.NAME}}"
+        if [ -f .envrc.local ]; then
+          cp .envrc.local "$wt/"
+          echo "----------------------------------------------"
+          echo "----------------------------------------------"
+          echo "CAUTION .envrc.local copied in to new worktree"
+          echo "It might contains a tailscale auth key"
+          echo "----------------------------------------------"
+          echo "----------------------------------------------"
+        fi
+        echo "Run these two there; they are yours to run:"
+        echo "  cd $wt && direnv allow"
+        echo "  prek install"
+
+  feature:scenario:
+    desc: "Write web/regression/scenarios/<name>.json as a todo scenario; it does not overwrite one; task feature:scenario -- <name>"
+    silent: true
+    cmds:
+      - |
+        set -eu
+        set -- {{.CLI_ARGS}}
+        name=${1:-}
+        f=web/regression/scenarios/$name.json
+        no() { echo "feature:scenario: $*"; exit 1; }
+        echo "$name" | grep -Eqx '[a-z0-9]+(-[a-z0-9]+)*' || no "give a kebab-case name: task feature:scenario -- <name>"
+        [ ! -e "$f" ] || no "$f exists; it is not overwritten"
+        printf '{\n  "title": "%s",\n  "todo": "write the steps; see web/regression/README.md",\n  "steps": []\n}\n' "$name" > "$f"
+        echo "feature:scenario: $f is a todo; write its steps"
+
+  feature:refresh:
+    desc: "In a branch's worktree: merge the local main, then run the gate; prints scenario: todo <name> when the branch changes web/ and has no steps"
+    silent: true
+    cmds:
+      - |
+        set -eu
+        branch=$(git branch --show-current)
+        no() { echo "feature:refresh: $*"; exit 1; }
+        [ -n "$branch" ] && [ "$branch" != main ] || no "run in a branch's worktree, not on main"
+        [ -z "$(git status --porcelain --untracked-files=no)" ] || no "the tree has changes; commit or stash them first"
+        # The local main, not origin/main: origin is not fetched, so a
+        # main on GitHub that differs from the local one never reaches a branch.
+        if ! git merge -q --no-edit main; then
+          git diff --name-only --diff-filter=U
+          no "a conflict in the files above; resolve them, run task gate, SKIP=prompt-history-guard git merge --continue, then refresh again"
+        fi
+        pnpm --dir web install --frozen-lockfile --silent
+        red=0
+        task gate || red=1
+        s=web/regression/scenarios/$branch.json
+        if [ -n "$(git diff --name-only main HEAD -- web/)" ] &&
+          { ! git cat-file -e "HEAD:$s" 2>/dev/null || git show "HEAD:$s" | grep -q '"todo"'; }; then
+          echo "scenario: todo $branch"
+        fi
+        exit $red
+
+  feature:finish:
+    desc: "From main's worktree: merge a refreshed branch in ../protowx-merge behind the gate, push, tag; task feature:finish -- <branch> [--no-scenario \"<reason>\"] [--message-file <path>]"
+    # The body is scripts/feature/finish.sh: it is past twenty lines.
+    silent: true
+    cmds:
+      - bash scripts/feature/finish.sh {{.CLI_ARGS}}
+
+  plan-report:
+    desc: "Usually run via prek, Rewrite the md-tmpl block of docs/features/README.md with the output of repo-tools plan-report: one row per feature, with the open, done and total tasks of its plan.md. The hook rewrites the file and fails, so stage it and commit again."
+    cmds:
+      - md-tmpl -w docs/features/README.md
+
+  baselines:
+    desc: "Take the baselines again, in both regression configs, and write the visual diff to docs/changes/visual-diff/<descr>/: task baselines -- <descr> [name...]"
+    # A person decides this, not an agent: a wrong baseline hides a
+    # regression for good. docs/devtools/merging-branches.md section 4
+    # is the page. The description is kebab-case; the names, if any,
+    # pick the scenarios, as task web:regression takes them. The two
+    # suites run with --update-snapshots, then regression/visualDiff.mjs
+    # compares each rewritten baseline with the one in the index, and
+    # records the commit shas in the README.md: HEAD, MERGE_HEAD in a
+    # merge, and the commit that wrote each old baseline.
+    silent: true
+    cmds:
+      - |
+        set -eu
+        set -- {{.CLI_ARGS}}
+        descr=${1:-}
+        no() { echo "baselines: $*"; exit 1; }
+        echo "$descr" | grep -Eqx '[a-z0-9]+(-[a-z0-9]+)*' || no "give a kebab-case description: task baselines -- <descr> [name...]"
+        shift
+        task web:regression -- "$@" --update-snapshots
+        task web:regression:stack -- "$@" --update-snapshots
+        cd web && node regression/visualDiff.mjs "$descr"

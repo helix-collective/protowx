@@ -1,0 +1,59 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+exclude = """(?x)^(
+  .prompts |
+  .prompt-history
+)"""
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "mixed-line-ending" },
+  { id = "check-yaml" },
+  { id = "check-toml" },
+  { id = "end-of-file-fixer" },
+  { id = "check-symlinks" },
+  { id = "check-merge-conflict" },
+  { id = "detect-private-key" },
+  # {
+  #   id = "no-commit-to-branch",
+  #   args = ["--branch", "main"]
+  # },
+  # { id = "check-executables-have-shebangs" },
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "prompt-history-guard",
+    name = ".prompts/history is committed on its own",
+    description = "Take the .prompts/history transcripts back out of the index when the commit holds anything else, and refuse the commit if that mix is still there; a commit of transcripts alone is left alone.",
+    entry = "repo-tools prompt-history-guard",
+    language = "system",
+    pass_filenames = false,
+    always_run = true
+  },
+  {
+    id = "md-table-fmt",
+    name = "the Markdown tables are aligned",
+    description = "Pad every table cell to the width of its column, so a page reads in the raw file and not only in a viewer; the root AGENTS.md section 'Markdown style' is the rule. The hook rewrites the file and fails, so stage it and commit again. A cell holding an escaped pipe is refused rather than fixed.",
+    entry = "repo-tools md-table-fmt",
+    language = "system",
+    files = "\\.md$",
+    exclude = "^iac/",
+    pass_filenames = true
+  },
+  {
+    id = "plan-report",
+    name = "the plan table of docs/features/README.md is current",
+    description = "Rewrite the md-tmpl block of docs/features/README.md with the output of repo-tools plan-report: one row per feature, with the open, done and total tasks of its plan.md. The hook rewrites the file and fails, so stage it and commit again.",
+    entry = "md-tmpl -w docs/features/README.md",
+    language = "system",
+    files = "^docs/features/.*/plan.*\\.md$",
+    pass_filenames = false
+  }
+]

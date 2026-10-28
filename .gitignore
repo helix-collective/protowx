@@ -1,0 +1,44 @@
+/.direnv
+# The local half of .envrc: REPO_TOOLS_DEV and anything else that is
+# yours and not the repository's.
+/.envrc.local
+.claude/worktrees/
+.DS_Store
+*.code-workspace
+# build outputs of task calc:wasm (the binary is tied to the Go toolchain)
+web/packages/client/wasm/
+web/node_modules/
+web/**/node_modules/
+web/**/dist/
+
+# built by task bff:build and task myw:build
+services/bff/bff
+services/myw/myw
+*-
+
+# vitest browser mode drops a screenshot beside a failing test
+web/**/__screenshots__/
+web/**/.vitest-attachments/
+
+# the regression suite's failed shots and its HTML report,
+# web/regression/README.md
+web/regression/results/
+web/regression/report/
+
+# rapid writes a replay file beside a failing property test. It is a
+# local reproduction aid -- `-rapid.seed` in the failure message is the
+# portable form -- and goes stale the moment the bug is fixed. A fuzz
+# corpus under testdata/fuzz/ is the opposite and is committed.
+engine/**/testdata/rapid/
+
+.playwright-mcp/
+
+# A bug report is local. .bugreports/AGENTS.md is tracked: it was
+# added with `git add -f`, and git tracks it from then on.
+.bugreports/
+
+# the records of the connected page, written by bff --store
+calculations.json
+
+# go-task's checksums of a task's sources
+.task/

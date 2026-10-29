@@ -273,6 +273,23 @@
             esac
             echo "  ------------------------------------------"
             echo
+
+            # The shared git aliases, .gitshared, are opt-in: git reads
+            # the file only when .git/config includes it. No tracked file
+            # carries the include, and `git worktree add` does not bring
+            # it, so the shell says when it is missing. `git config
+            # --local` in a worktree writes the common .git/config, so one
+            # run covers every worktree of the clone.
+            if command -v git >/dev/null \
+              && ! git config --local --get-all include.path 2>/dev/null \
+                 | grep -qx '\.\./\.gitshared'; then
+              echo "  the shared git config is not included"
+              echo "  .gitshared holds the aliases: st, ls, lg, co"
+              echo "  ------------------------------------------"
+              echo "  git config --local include.path ../.gitshared"
+              echo "  ------------------------------------------"
+              echo
+            fi
           '';
         };
       });

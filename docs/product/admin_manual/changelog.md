@@ -8,6 +8,25 @@ commit. The brief product log is [../changelog.md](../changelog.md).
 
 ## 2026-10-29
 
+- **Added.** The ngrok stack, `deploy/ngrok/`: the same `bff` and
+  `myw` behind an ngrok agent, on the public internet, in place of a
+  tailnet node. `task fastdev -- ngrok` starts it;
+  `task ngrok:logs` follows it and `task ngrok:down` stops it. Put
+  `NGROK_AUTHTOKEN` and `NGROK_DOMAIN` in `.envrc.local`.
+  `NGROK_MYW_DOMAIN`, a second domain, turns **dictate** on. HTTPS
+  needs nothing: ngrok ends TLS with its own certificate. See
+  [running-the-stack.md](running-the-stack.md), "On ngrok instead of
+  a tailnet".
+- **Added.** `NGROK_OAUTH_EMAIL` in `.envrc.local`, the addresses SSO
+  lets into the ngrok stack, separated by commas. A visitor signs in
+  with Google, and any other address gets a 403. **Leave it out and
+  the ngrok URL is open**: anyone who has the link reaches the page,
+  the engine API and your calculations. `task fastdev -- ngrok`
+  warns at each start while it is off, and starts anyway. My
+  Whisper's endpoint has no SSO either way.
+- **Changed.** `task fastdev` takes the stack to start:
+  `task fastdev -- tailscale`, the default, or
+  `task fastdev -- ngrok`. `task fastdev` alone is unchanged.
 - **Added.** `task fastdev`, the one command that starts the stack. It
   checks that `.envrc.local` is there, and that `TS_AUTHKEY` and
   `TS_DOMAIN` read right, then runs `task compose:up`. A line that is

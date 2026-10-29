@@ -29,10 +29,36 @@
 # write it down here. task compose:authkey counts the days left. It
 # warns from a week before, and task compose:up refuses to start
 # after. Leave it out and nothing is checked.
+#
+# The NGROK_ lines are the second stack, deploy/ngrok, which puts the
+# same two services on the public internet in place of a tailnet.
+# docs/devtools/compose-ngrok.md is the page.
+#
+#   NGROK_AUTHTOKEN    the agent's credential. One token serves every
+#                      endpoint of your account, and it does not expire.
+#   NGROK_DOMAIN       the page's domain, with no https:// and no path.
+#                      A free account has one, on ngrok-free.dev.
+#   NGROK_MYW_DOMAIN   a second domain, for My Whisper. Leave it out and
+#                      the page draws no dictate button. A free account
+#                      has one domain, so leave it out there.
+#   NGROK_OAUTH_EMAIL  the addresses SSO lets in, separated by commas.
+#                      LEAVE IT OUT AND THE PAGE IS OPEN: anyone with
+#                      the URL reaches the engine API and your
+#                      calculations. The tailnet is the guard in the
+#                      other stack; here SSO is.
+#
+# task fastdev -- ngrok checks these three and starts the stack.
 
 # export GOWORK="$PWD/go.work"
 # export REPO_TOOLS_DEV=../tools
 # export OHM_GO_DEV=../ohm-go
+
+# https://dashboard.ngrok.com/get-started/your-authtoken
+export NGROK_AUTHTOKEN=xxx
+# https://dashboard.ngrok.com/domains
+export NGROK_DOMAIN=XXXX.ngrok-free.dev
+# export NGROK_MYW_DOMAIN=XXXX-myw.ngrok-free.dev
+# export NGROK_OAUTH_EMAIL=you@example.com
 
 export TS_AUTHKEY=tskey-auth-xxxx
 export TS_AUTHKEY_EXPIRE=YYYYMMDD

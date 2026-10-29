@@ -1,0 +1,102 @@
+# The ngrok stack: bff and My Whisper, myw, behind one ngrok agent.
+# README.md beside this file is how to run it. It is the compose stack
+# of ../compose/ with ngrok in place of Tailscale, and it builds the
+# same two images from the same Dockerfile.
+#
+# Run it through task ngrok:up, which names the project after the
+# branch, writes ngrok.generated.yml from .envrc.local, and adds the
+# myw profile when NGROK_MYW_DOMAIN is set. NGROK_AUTHTOKEN,
+# NGROK_DOMAIN and the rest come from .envrc.local.
+#
+# No service publishes a port. The agent is the stack's only network:
+# the other two share its namespace and listen on its loopback, and
+# each ngrok endpoint forwards to one of them. task ngrok:check fails
+# on a `ports` entry.
+#
+# THE STACK IS ON THE PUBLIC INTERNET. Unlike ../compose/, which is on
+# one person's tailnet, an ngrok URL is reachable by anyone who has
+# it. The engine API is single-tenant and stays on here, as it does
+# there, so SSO is the only guard. Set NGROK_OAUTH_EMAIL in
+# .envrc.local to turn it on. docs/devtools/compose-ngrok.md, section
+# 3, is the page, and deploy/AGENTS.md holds the rule.
+
+# The same build as ../compose/compose.yaml's x-build. YAML anchors do
+# not cross files, so this is a copy; task ngrok:check fails when the
+# two differ.
+x-build: &build
+  context: ../..
+  dockerfile: deploy/compose/Dockerfile
+
+services:
+  ngrok:
+    image: ngrok/ngrok:3.39.13-alpine
+    # The agent reads the token from the environment, so it is in no
+    # file. The endpoints are in ngrok.generated.yml, which
+    # task ngrok:config writes: the agent's own config expands no
+    # variable, so a domain cannot come from the environment.
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?set NGROK_AUTHTOKEN in .envrc.local; https://dashboard.ngrok.com/get-started/your-authtoken}
+    command:
+      - start
+      - --all
+      - --config
+      - /etc/ngrok.yml
+    volumes:
+      - ./ngrok.generated.yml:/etc/ngrok.yml:ro
+    restart: unless-stopped
+
+  bff:
+    build:
+      <<: *build
+      target: bff
+    network_mode: service:ngrok
+    depends_on:
+      - ngrok
+    # The engine API stays on, as in ../compose/compose.yaml. There the
+    # guard is the tailnet; here it is SSO, and SSO is off until
+    # NGROK_OAUTH_EMAIL is set. The host's uid and gid, from
+    # task ngrok:up, so a feedback report in .bugreports belongs to that
+    # person and not to root. The image's entrypoint names --dir and
+    # --store.
+    user: ${PROTOWX_UID:?run the stack through task ngrok:up}:${PROTOWX_GID:?run the stack through task ngrok:up}
+    command:
+      - --addr
+      - 127.0.0.1:8080
+      - --bugs
+      - /repo/.bugreports
+      # Empty when NGROK_MYW_DOMAIN is not set: the page then draws no
+      # dictate button. task ngrok:up computes it.
+      - --myw-url
+      - ${NGROK_MYW_URL:-}
+    # The repository's .bugreports, so a report sent to the stack lands
+    # beside the ones task bff:connected writes. The calculations are
+    # in the volume store, so they outlive the container. The volume is
+    # this project's, so the tailscale stack's calculations are not
+    # these.
+    volumes:
+      - ../../.bugreports:/repo/.bugreports
+      - store:/app/store
+    restart: unless-stopped
+
+  myw:
+    # No NGROK_MYW_DOMAIN, no endpoint for it, so no service either.
+    # task ngrok:up adds --profile myw when the domain is set.
+    profiles:
+      - myw
+    build:
+      <<: *build
+      target: myw
+    network_mode: service:ngrok
+    depends_on:
+      - ngrok
+    # The page's origin, so CORS lets the dictation in; its default list
+    # is bff's loopback origins alone.
+    command:
+      - --addr
+      - 127.0.0.1:8090
+      - --origin
+      - https://${NGROK_DOMAIN:?set NGROK_DOMAIN in .envrc.local, your ngrok domain, e.g. protowx.ngrok-free.dev}
+    restart: unless-stopped
+
+volumes:
+  store:

@@ -1,0 +1,128 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+#
+# The ngrok stack: bff and My Whisper, myw, behind one ngrok agent.
+# See README.md. Docker is not in the dev shell; these tasks need it on
+# the machine. NGROK_AUTHTOKEN, NGROK_DOMAIN, NGROK_MYW_DOMAIN and
+# NGROK_OAUTH_EMAIL come from .envrc.local.
+#
+# It is the stack of ../compose/ with ngrok in place of Tailscale, and
+# it builds the same two images from the same Dockerfile. The two
+# stacks are two compose projects, so both run at once.
+
+version: '3'
+
+vars:
+  # The branch made a project name: lower case, each run outside
+  # [a-z0-9] one hyphen. The project is protowx-ngrok-<branch>, which
+  # no tailscale stack uses, so the two never share a volume.
+  BRANCH:
+    sh: git branch --show-current | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+  # bff runs as the host's user, so its feedback reports in .bugreports
+  # are that person's to read and delete.
+  UID:
+    sh: id -u
+  GID:
+    sh: id -g
+  PROJECT: '{{if .BRANCH}}{{printf "protowx-ngrok-%s" .BRANCH | trunc 63 | trimSuffix "-"}}{{else}}protowx-ngrok{{end}}'
+
+# The project is named with -p on each docker compose line, not with
+# COMPOSE_PROJECT_NAME here. A file-level env of an included Taskfile
+# reaches every task of the root one, and this file is included after
+# ../compose/, so COMPOSE_PROJECT_NAME here would rename the tailnet
+# stack's images too. task compose:regression-up names its project the
+# same way. PROTOWX_UID and PROTOWX_GID are the same value in both
+# files, so those are safe here.
+env:
+  PROTOWX_UID: '{{.UID}}'
+  PROTOWX_GID: '{{.GID}}'
+
+tasks:
+  up:
+    desc: "Build the images and start the stack behind the ngrok agent; needs NGROK_AUTHTOKEN and NGROK_DOMAIN"
+    cmds:
+      - task: config
+      # The leading colon is the root Taskfile's namespace. Without it
+      # task looks for ngrok:compose:disk, which is not a task.
+      - task: :compose:disk
+      # Docker makes a missing bind-mount source as root, and bff, as
+      # the host's user, then fails each report with a 500. A worktree
+      # has no .bugreports, as git ignores it, so make it here.
+      - mkdir -p ../../.bugreports
+      - 'test -w ../../.bugreports || { echo ".bugreports is not writable by uid {{.UID}}: sudo chown {{.UID}}:{{.GID}} .bugreports" >&2; exit 1; }'
+      # NGROK_MYW_URL is bff's --myw-url, and the myw profile adds the
+      # service. No NGROK_MYW_DOMAIN means neither: no endpoint, no
+      # container, and no dictate button on the page.
+      - |
+        set -eu
+        profile=
+        if [ -n "${NGROK_MYW_DOMAIN:-}" ]; then
+          export NGROK_MYW_URL="https://$NGROK_MYW_DOMAIN"
+          profile="--profile myw"
+        fi
+        # shellcheck disable=SC2086
+        docker compose -p {{.PROJECT}} $profile up --build --detach {{.CLI_ARGS}}
+      - 'echo "the page: https://${NGROK_DOMAIN}/"'
+
+  config:
+    desc: "Write ngrok.generated.yml, the agent's endpoints, from .envrc.local; task ngrok:up runs it first"
+    silent: true
+    # The agent's config file expands no environment variable, so the
+    # domains cannot come from the environment as NGROK_AUTHTOKEN does.
+    # scripts/ngrok/config.sh writes the file; git ignores it.
+    cmds:
+      - ../../scripts/ngrok/config.sh
+
+  build:
+    desc: Build the two images, bff and myw, and start nothing; touches no ngrok account
+    env:
+      # Compose reads the whole file to build, and the flags need the
+      # two values; no image holds either.
+      NGROK_AUTHTOKEN: '{{.NGROK_AUTHTOKEN | default "build.invalid"}}'
+      NGROK_DOMAIN: '{{.NGROK_DOMAIN | default "build.invalid"}}'
+    cmds:
+      # The leading colon is the root Taskfile's namespace. Without it
+      # task looks for ngrok:compose:disk, which is not a task.
+      - task: :compose:disk
+      - docker compose -p {{.PROJECT}} --profile myw build {{.CLI_ARGS}}
+
+  down:
+    desc: Stop the stack; the calculations, in the volume store, and the reports, in .bugreports, stay
+    cmds:
+      - docker compose -p {{.PROJECT}} --profile myw down {{.CLI_ARGS}}
+
+  logs:
+    desc: Follow the stack's logs; task ngrok:logs -- ngrok for the agent alone
+    cmds:
+      - docker compose -p {{.PROJECT}} --profile myw logs {{.CLI_ARGS}}
+
+  check:
+    desc: The file resolves, no service publishes a port, it needs NGROK_AUTHTOKEN and NGROK_DOMAIN, and its build is ../compose/'s
+    env:
+      NGROK_AUTHTOKEN: '{{.NGROK_AUTHTOKEN | default "check.invalid"}}'
+      NGROK_DOMAIN: '{{.NGROK_DOMAIN | default "check.invalid"}}'
+    cmds:
+      - docker compose -p {{.PROJECT}} --profile myw config --quiet
+      - |
+        if docker compose -p {{.PROJECT}} --profile myw config | grep -qE '^ +(ports|expose):'; then
+          echo "a service publishes a port; the stack publishes none" >&2
+          exit 1
+        fi
+      - |
+        if NGROK_AUTHTOKEN= docker compose -p {{.PROJECT}} config --quiet 2>/dev/null; then
+          echo "compose resolves without NGROK_AUTHTOKEN; it must refuse" >&2
+          exit 1
+        fi
+      - |
+        if NGROK_DOMAIN= docker compose -p {{.PROJECT}} --profile myw config --quiet 2>/dev/null; then
+          echo "compose resolves without NGROK_DOMAIN; it must refuse" >&2
+          exit 1
+        fi
+      - echo "compose.yaml resolves, publishes no port, and needs NGROK_AUTHTOKEN and NGROK_DOMAIN"
+      # The x-build block is a copy of ../compose/compose.yaml's: YAML
+      # anchors do not cross files, and the two must stay the same.
+      - |
+        if ! diff <(sed -n '/^x-build:/,/^$/p' ../compose/compose.yaml) <(sed -n '/^x-build:/,/^$/p' compose.yaml); then
+          echo "the x-build blocks of ../compose/compose.yaml and compose.yaml differ; keep them the same" >&2
+          exit 1
+        fi
+      - echo "compose.yaml builds as ../compose/compose.yaml does"

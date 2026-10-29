@@ -19,6 +19,11 @@ includes:
   compose:
     taskfile: ./deploy/compose/Taskfile.compose.yml
     dir: ./deploy/compose
+  # The same stack behind an ngrok agent, on the public internet, in
+  # place of a tailnet node; see deploy/ngrok/README.md.
+  ngrok:
+    taskfile: ./deploy/ngrok/Taskfile.ngrok.yml
+    dir: ./deploy/ngrok
   # My Whisper, the dictation's transcription service; see its README.md.
   myw:
     taskfile: ./services/myw/Taskfile.myw.yml
@@ -41,15 +46,23 @@ tasks:
       - task calc:ohm2wasm
 
   fastdev:
-    desc: "Check the tailnet credentials, then start the stack: task compose:up; a missing or wrong .envrc.local, TS_AUTHKEY or TS_DOMAIN stops it, and names its fix"
+    desc: "Check the credentials of one stack, then start it: task fastdev -- [tailscale|ngrok]; tailscale is the default, and each failure names its fix"
     # The check is scripts/fastdev/check.sh: it is past twenty lines.
-    # It exits 1 on a problem, so compose:up never runs on a bad
-    # credential. compose:up checks the key's expiry itself, in
+    # It exits 1 on a problem, so no stack starts on a bad credential.
+    # The tailscale stack checks the key's expiry itself, in
     # compose:authkey, so this task does not check it twice.
     silent: true
     cmds:
-      - bash scripts/fastdev/check.sh
-      - task: compose:up
+      - |
+        set -eu
+        set -- {{.CLI_ARGS}}
+        kind=${1:-tailscale}
+        bash scripts/fastdev/check.sh "$kind"
+        case "$kind" in
+          tailscale) task compose:up ;;
+          ngrok) task ngrok:up ;;
+          *) echo "fastdev: unknown stack \"$kind\"" >&2; exit 1 ;;
+        esac
 
   tidy:
     desc: Run go mod tidy in each Go module of the workspace

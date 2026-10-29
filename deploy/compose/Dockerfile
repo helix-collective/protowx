@@ -44,7 +44,11 @@ COPY clis/go.mod clis/go.sum clis/
 COPY services/bff/go.mod services/bff/go.sum services/bff/Taskfile.bff.yml services/bff/
 COPY services/myw/go.mod services/myw/go.sum services/myw/Taskfile.myw.yml services/myw/
 COPY web/Taskfile.web.yml web/
+# Every Taskfile the root one includes, or task refuses to read any of
+# them: "No Taskfile found at ...". A new include in Taskfile.yml is a
+# new line here, even for a stack that this image never runs.
 COPY deploy/compose/Taskfile.compose.yml deploy/compose/
+COPY deploy/ngrok/Taskfile.ngrok.yml deploy/ngrok/
 
 # ---- bff's build ---------------------------------------------------
 # The tasks a developer runs, in the same shell. bff needs the page:

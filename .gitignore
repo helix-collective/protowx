@@ -5,6 +5,11 @@
 .claude/worktrees/
 .DS_Store
 *.code-workspace
+# written by task ngrok:config from .envrc.local, before each start of
+# the ngrok stack. The ngrok agent's own config expands no environment
+# variable, so the domains cannot reach it any other way.
+deploy/ngrok/ngrok.generated.yml
+
 # build outputs of task calc:wasm (the binary is tied to the Go toolchain)
 web/packages/client/wasm/
 web/node_modules/

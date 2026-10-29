@@ -167,6 +167,22 @@ tasks:
           exit 1
         fi
       - echo "compose.regression.yaml resolves, names no TS_ variable, and builds as compose.yaml does"
+      # task in the image reads every Taskfile the root one includes,
+      # and refuses them all when one is absent. So each include needs
+      # a COPY line in the workspace stage. A new include without one
+      # fails the build, deep in build-bff, with "No Taskfile found".
+      - |
+        missing=
+        for tf in $(sed -n 's|^ *taskfile: \./||p' ../../Taskfile.yml); do
+          grep -q "$tf" Dockerfile || missing="$missing $tf"
+        done
+        if [ -n "$missing" ]; then
+          echo "Dockerfile does not copy:$missing" >&2
+          echo "the root Taskfile.yml includes each of them, so task in the image needs them" >&2
+          echo "add a COPY line to the workspace stage" >&2
+          exit 1
+        fi
+      - echo "Dockerfile copies every Taskfile the root Taskfile.yml includes"
 
   closed:
     desc: "From a tailnet peer: the page answers on :443, and nothing on :8080 (bff) or :8090 (myw) behind Serve"

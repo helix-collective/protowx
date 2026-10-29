@@ -110,10 +110,48 @@ reads `TS_AUTHKEY` again, and the three seeded calculations.
 - **One branch, one node.** A second worktree on another branch is a
   second stack and a second node.
 
+## On ngrok instead of a tailnet
+
+`task fastdev -- ngrok` runs the same two services behind an ngrok
+agent. Use it to show the page to someone who is not on your
+tailnet, or to let a webhook reach `bff`. The URL is then
+`https://<your-ngrok-domain>/`, and ngrok ends TLS with its own
+certificate, so there is nothing to set up for HTTPS.
+
+```sh
+# Three lines in .envrc.local, then direnv reload:
+export NGROK_AUTHTOKEN=2abc...                # the agent's token
+export NGROK_DOMAIN=protowx.ngrok-free.dev    # the page's domain
+export NGROK_OAUTH_EMAIL=you@example.com      # SSO; see the warning
+
+task fastdev -- ngrok   # check, then start
+task ngrok:logs         # follow
+task ngrok:down         # stop; the calculations stay
+```
+
+**The ngrok URL is public.** Your tailnet is the guard on the stack
+above. There is none here until you set `NGROK_OAUTH_EMAIL`: anyone
+who has the link reaches the page, the engine and every calculation.
+With the variable set, a visitor signs in with Google first, and
+only the addresses you name get in. `task fastdev -- ngrok` warns at
+each start while it is off, and starts anyway.
+
+The dictation needs a second domain, `NGROK_MYW_DOMAIN`. A free
+ngrok account has one domain, so the page there draws no dictate
+button. That second endpoint has no SSO, because the page fetches it
+in a way that cannot follow a login.
+[../../devtools/compose-ngrok.md](../../devtools/compose-ngrok.md)
+is the full page.
+
+The two stacks are separate. Each keeps its own calculations, and
+both can run at once.
+
 ## See also
 
 - `deploy/compose/README.md`, in the repository: the stack's files,
-  images and flags.
+  images and flags. `deploy/ngrok/README.md` is the ngrok one.
 - [../../devtools/compose-tailscale.md](../../devtools/compose-tailscale.md):
   the credential, `TS_DOMAIN`, kernel mode.
+- [../../devtools/compose-ngrok.md](../../devtools/compose-ngrok.md):
+  the token, the domains, HTTPS and SSO.
 - [changelog.md](changelog.md): what changed for the admin.

@@ -11,6 +11,9 @@ for the admin who runs the stack.
   refuses to start on an expired key.
 - `task fastdev` starts the stack in one command. It checks your
   tailnet credentials first, and names the fix when one is missing.
+- A second stack, on ngrok: the same page on a public HTTPS URL, for
+  someone who is not on your tailnet. A Google login guards it when
+  you name the addresses that may come in.
 
 ## 2026-10-28
 

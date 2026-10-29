@@ -298,16 +298,16 @@ it, from the phase that fills the module. Claude Code loads the pair
 when it first reads a file under that directory. Read it before
 editing there.
 
-| directory       | what it holds                                                     |
-|-----------------|-------------------------------------------------------------------|
-| `spec/`         | the grammar, the three ADL files, the grammar's fixtures          |
-| `engine/`       | Go module `engine`: the grammar, the AST, the evaluator, the wasm |
-| `clis/`         | Go module `clis`: one `main` package per command; `calc` first    |
-| `services/bff/` | Go module `bff`: the page, `/api/calc`, the report, the traces    |
-| `services/myw/` | Go module `myw`: My Whisper, whisper.cpp through kronk            |
-| `web/`          | the pnpm workspace: `client`, `ui`, the app, the regression suite |
-| `deploy/`       | the compose stack: `bff` and `myw` behind one tailnet node        |
-| `scripts/`      | the body of a task too long for a Taskfile; one per directory     |
+| directory       | what it holds                                                       |
+|-----------------|---------------------------------------------------------------------|
+| `spec/`         | the grammar, the three ADL files, the grammar's fixtures            |
+| `engine/`       | Go module `engine`: the grammar, the AST, the evaluator, the wasm   |
+| `clis/`         | Go module `clis`: one `main` package per command; `calc` first      |
+| `services/bff/` | Go module `bff`: the page, `/api/calc`, the report, the traces      |
+| `services/myw/` | Go module `myw`: My Whisper, whisper.cpp through kronk              |
+| `web/`          | the pnpm workspace: `client`, `ui`, the app, the regression suite   |
+| `deploy/`       | two stacks of `bff` and `myw`: one tailnet node, or one ngrok agent |
+| `scripts/`      | the body of a task too long for a Taskfile; one per directory       |
 
 `engine/` imports no service and no CLI, so the wasm build cannot link
 one. `services/bff` imports `engine`. `services/myw` imports kronk,
@@ -330,6 +330,12 @@ These rules cross a module boundary, so they live here:
   The compose stack, `deploy/compose/`, is not such a deploy: it is
   one person's own stack on their own tailnet, so it keeps `--api`
   on. A stack that serves anyone else turns it off.
+- **`deploy/ngrok/` is the one exception, by the owner's decision.**
+  It keeps `--api` on and it is on the public internet. SSO is the
+  only guard, and it is off until `NGROK_OAUTH_EMAIL` is set. Do not
+  change either default; do keep every file and message plain about
+  what is open. `deploy/AGENTS.md` holds the rule, and
+  `docs/devtools/compose-ngrok.md` section 3 turns SSO on.
 
 ## docs
 
@@ -449,7 +455,8 @@ everything):
 | `task calc:adl-ts`                | `web/packages/client/src/adl/`                                         | the typed client in `client/src/engine.ts`            |
 | `task calc:wasm`                  | `web/packages/client/wasm/`                                            | —                                                     |
 | `task gen`                        | all four of the generators above                                       | —                                                     |
-| `task fastdev`                    | nothing; it checks the credentials, then runs `task compose:up`        | the line it names; `compose-tailscale.md`             |
+| `task fastdev [-- ngrok]`         | nothing; it checks the credentials, then starts that stack             | the line it names; `compose-ngrok.md`                 |
+| `task ngrok:config`               | `deploy/ngrok/ngrok.generated.yml`, the agent's endpoints              | `scripts/ngrok/config.sh`, never the output           |
 | `task gate`                       | nothing; it checks, and ends `gate: green` or `gate: red at <step>`    | the step it names; `merging-branches.md`              |
 | `task web:regression`             | nothing; it builds `dist/`, plays the scenarios, compares the shots    | the page, or its baseline; `web/regression/README.md` |
 | `task web:regression:stack`       | nothing; it builds the docker images, plays the stack's scenarios      | the page, or its baseline; `web/regression/README.md` |

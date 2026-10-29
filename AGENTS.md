@@ -449,6 +449,7 @@ everything):
 | `task calc:adl-ts`                | `web/packages/client/src/adl/`                                         | the typed client in `client/src/engine.ts`            |
 | `task calc:wasm`                  | `web/packages/client/wasm/`                                            | —                                                     |
 | `task gen`                        | all four of the generators above                                       | —                                                     |
+| `task fastdev`                    | nothing; it checks the credentials, then runs `task compose:up`        | the line it names; `compose-tailscale.md`             |
 | `task gate`                       | nothing; it checks, and ends `gate: green` or `gate: red at <step>`    | the step it names; `merging-branches.md`              |
 | `task web:regression`             | nothing; it builds `dist/`, plays the scenarios, compares the shots    | the page, or its baseline; `web/regression/README.md` |
 | `task web:regression:stack`       | nothing; it builds the docker images, plays the stack's scenarios      | the page, or its baseline; `web/regression/README.md` |

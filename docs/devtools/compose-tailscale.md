@@ -4,6 +4,10 @@
 
 ```sh
 # In the repository root, in the dev shell, with docker on the machine.
+# The one command: check .envrc.local, TS_AUTHKEY and TS_DOMAIN, then start.
+# A missing or wrong one stops it, and names its fix.
+task fastdev
+
 # Check the file: it resolves, publishes no port, and needs TS_DOMAIN. No tailnet.
 task compose:check
 
@@ -72,6 +76,21 @@ export TS_DOMAIN=tail1234.ts.net
 
 Then run `direnv reload`. Pass other `tailscale up` flags in
 `TS_EXTRA_ARGS`. `.envrc.local.example` has all three lines.
+
+`task fastdev` checks the three, then runs `task compose:up`. It
+reads `.envrc.local`, and the shape of `TS_AUTHKEY` and of
+`TS_DOMAIN`:
+
+| what it finds                                | what it does                           |
+|----------------------------------------------|----------------------------------------|
+| the file, a key and a domain that read right | starts the stack, `task compose:up`    |
+| no `.envrc.local`                            | stops; prints `cp` and the two links   |
+| a placeholder, such as `tskey-auth-xxxx`     | stops; prints the shape, and the links |
+| a value in the file and not in the shell     | stops; prints run `direnv reload`      |
+
+It checks the shape only: the tailnet alone knows whether a key
+works. It does not check the expiry date; `task compose:up` does
+that itself, below, before it builds.
 
 **Write the expiry date down.** The console shows the expiry with the
 key, and the key itself does not carry it. Nothing in the stack can

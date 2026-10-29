@@ -6,6 +6,7 @@ your devices.
 
 ```sh
 # In the repository root, in the dev shell, with docker on the machine.
+task fastdev           # check your credentials, then start; the usual way
 task compose:authkey   # the days your auth key has left; no tailnet
 task compose:check     # the files are good; no tailnet
 task compose:build     # the two images; no tailnet
@@ -34,6 +35,9 @@ domain, such as `tail1234.ts.net`.
    ```
 
 4. Run `direnv reload`.
+5. Run `task fastdev`. It checks the three lines, then starts the
+   stack. A line that is missing or wrong stops it, and the message
+   names the fix.
 
 The tailnet must have MagicDNS and HTTPS certificates on.
 

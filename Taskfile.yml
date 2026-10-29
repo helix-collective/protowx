@@ -40,6 +40,17 @@ tasks:
       - task calc:gen_visitor
       - task calc:ohm2wasm
 
+  fastdev:
+    desc: "Check the tailnet credentials, then start the stack: task compose:up; a missing or wrong .envrc.local, TS_AUTHKEY or TS_DOMAIN stops it, and names its fix"
+    # The check is scripts/fastdev/check.sh: it is past twenty lines.
+    # It exits 1 on a problem, so compose:up never runs on a bad
+    # credential. compose:up checks the key's expiry itself, in
+    # compose:authkey, so this task does not check it twice.
+    silent: true
+    cmds:
+      - bash scripts/fastdev/check.sh
+      - task: compose:up
+
   tidy:
     desc: Run go mod tidy in each Go module of the workspace
     vars:

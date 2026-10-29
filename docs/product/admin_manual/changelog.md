@@ -8,6 +8,14 @@ commit. The brief product log is [../changelog.md](../changelog.md).
 
 ## 2026-10-29
 
+- **Added.** `task fastdev`, the one command that starts the stack. It
+  checks that `.envrc.local` is there, and that `TS_AUTHKEY` and
+  `TS_DOMAIN` read right, then runs `task compose:up`. A line that is
+  missing or wrong stops it before docker, and the message names the
+  fix: the `cp` of `.envrc.local.example`, the console page for the
+  key, and the console page for the tailnet name. See
+  [running-the-stack.md](running-the-stack.md), "Before the first
+  start".
 - **Added.** `TS_AUTHKEY_EXPIRE` in `.envrc.local`, the expiry date of
   your Tailscale auth key, as `YYYYMMDD`. `task compose:authkey` says
   how many days the key has left. It warns from a week before the

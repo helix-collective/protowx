@@ -9,6 +9,8 @@ for the admin who runs the stack.
 
 - The stack warns a week before your Tailscale auth key expires, and
   refuses to start on an expired key.
+- `task fastdev` starts the stack in one command. It checks your
+  tailnet credentials first, and names the fix when one is missing.
 
 ## 2026-10-28
 

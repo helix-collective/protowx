@@ -23,9 +23,17 @@
 #
 # TS_AUTHKEY and TS_DOMAIN are for the compose stack's tailnet node;
 # docs/devtools/compose-tailscale.md is the page.
+#
+# TS_AUTHKEY_EXPIRE is the key's expiry date, YYYYMMDD. The console
+# shows it when you make the key, and the key does not carry it, so
+# write it down here. task compose:authkey counts the days left. It
+# warns from a week before, and task compose:up refuses to start
+# after. Leave it out and nothing is checked.
 
 # export GOWORK="$PWD/go.work"
-export REPO_TOOLS_DEV=../tools
-export OHM_GO_DEV=../ohm-go
+# export REPO_TOOLS_DEV=../tools
+# export OHM_GO_DEV=../ohm-go
+
 export TS_AUTHKEY=tskey-auth-xxxx
+export TS_AUTHKEY_EXPIRE=YYYYMMDD
 export TS_DOMAIN=tailbXXXXX.ts.net

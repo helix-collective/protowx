@@ -6,6 +6,16 @@ step an upgrade needs. One section per day; each entry gives its kind
 (added, changed, fixed or removed), what you type or do now, and the
 commit. The brief product log is [../changelog.md](../changelog.md).
 
+## 2026-10-29
+
+- **Added.** `TS_AUTHKEY_EXPIRE` in `.envrc.local`, the expiry date of
+  your Tailscale auth key, as `YYYYMMDD`. `task compose:authkey` says
+  how many days the key has left. It warns from a week before the
+  date, and `task compose:up` runs the same check first and refuses to
+  start after the date. Leave the variable out and nothing is checked.
+  See [running-the-stack.md](running-the-stack.md), "When the auth key
+  expires".
+
 ## 2026-10-28
 
 - **Added.** The compose stack, `deploy/compose/`: `bff` and `myw`

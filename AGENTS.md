@@ -307,7 +307,7 @@ editing there.
 | `services/myw/` | Go module `myw`: My Whisper, whisper.cpp through kronk            |
 | `web/`          | the pnpm workspace: `client`, `ui`, the app, the regression suite |
 | `deploy/`       | the compose stack: `bff` and `myw` behind one tailnet node        |
-| `scripts/`      | `feature/finish.sh`, the body of `task feature:finish`            |
+| `scripts/`      | the body of a task too long for a Taskfile; one per directory     |
 
 `engine/` imports no service and no CLI, so the wasm build cannot link
 one. `services/bff` imports `engine`. `services/myw` imports kronk,

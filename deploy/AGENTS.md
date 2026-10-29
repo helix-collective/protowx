@@ -38,8 +38,15 @@ The repo-wide rules are in the root `AGENTS.md`. This file covers
   the machine.
 - **`task compose:up` with a real `TS_AUTHKEY` makes a node on the
   tailnet.** An agent does not run it, nor `task compose:closed`,
-  unless the user asks. `task compose:check`, `task compose:build` and
-  the regression stack touch no tailnet.
+  unless the user asks. `task compose:authkey`,
+  `task compose:check`, `task compose:build` and the regression stack
+  touch no tailnet.
+- **The auth key expires, and only `.envrc.local` knows when.**
+  `TS_AUTHKEY_EXPIRE` holds the date, and
+  `scripts/compose/authkey.sh` reads it: a warning a week before, an
+  error after, and `task compose:up` stops on the error. The script
+  counts the days itself, because `date(1)` parses a date one way on
+  GNU and another on BSD.
 - **The trace viewer is not here yet.** Jaeger and `bff --otlp-url`
   join with the traces. Until then the stack has no `:8445`.
 

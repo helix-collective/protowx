@@ -10,6 +10,9 @@ task compose:check
 # Build the two images: bff and myw. No tailnet.
 task compose:build
 
+# The days the auth key has left. No tailnet.
+task compose:authkey
+
 # Build and start, as the node protowx-<branch>. Needs TS_AUTHKEY and TS_DOMAIN.
 task compose:up
 
@@ -63,11 +66,41 @@ the repository root, beside the domain:
 
 ```sh
 export TS_AUTHKEY=tskey-auth-...
+export TS_AUTHKEY_EXPIRE=20270127   # the key's expiry, YYYYMMDD
 export TS_DOMAIN=tail1234.ts.net
 ```
 
 Then run `direnv reload`. Pass other `tailscale up` flags in
-`TS_EXTRA_ARGS`. `.envrc.local.example` has both lines.
+`TS_EXTRA_ARGS`. `.envrc.local.example` has all three lines.
+
+**Write the expiry date down.** The console shows the expiry with the
+key, and the key itself does not carry it. Nothing in the stack can
+ask the tailnet, so `TS_AUTHKEY_EXPIRE` is the one record. A key
+made today with the maximum 90 days expires on the date the console
+gives; copy it in as `YYYYMMDD`.
+
+`task compose:authkey` then counts the days left:
+
+| days left     | what happens                                       |
+|---------------|----------------------------------------------------|
+| more than 7   | one line: the days left and the date               |
+| 7 to 0        | a warning, with the link to the console            |
+| past the date | an error; `task compose:up` stops before it builds |
+
+`task compose:up` runs the check first, so an expired key stops the
+start and names its fix. Three things turn the check off:
+
+- **No `TS_AUTHKEY`.** The check exits at once. `task compose:build`
+  and the regression stack, which need no key, never see it.
+- **No `TS_AUTHKEY_EXPIRE`.** The check says the expiry is unknown and
+  passes.
+- **A value that is not a date.** The check says so and passes. The
+  placeholder `YYYYMMDD`, from `.envrc.local.example`, is such a
+  value.
+
+A node that is already on the tailnet keeps its identity in the volume
+`ts-state` and needs no key. Unset `TS_AUTHKEY` to start that node
+with an expired key still in your shell.
 
 ## 2. TS_DOMAIN
 

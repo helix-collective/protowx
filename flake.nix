@@ -256,21 +256,16 @@
             ${nixpkgs.lib.optionalString (!(ohm-go ? rev)) mkOhmCliLocal}
 
             echo "protowx"
-            echo
-            echo "  task                                  list every task in Taskfile.yml"
-            echo
-            echo "  playwright ${pkgs.playwright-driver.version}                     pin the npm package to this"
-            echo
-            echo "  repo-tools"
             echo "  ------------------------------------------"
-            echo "  ${toolsSource}"
+            echo "  task       list every task in Taskfile.yml"
             echo "  ------------------------------------------"
-            echo "  ohm-cli"
+            echo "  playwright    ${pkgs.playwright-driver.version}"
             echo "  ------------------------------------------"
-            echo "  ${ohmSource}"
+            echo "  repo-tools    ${toolsSource}"
             echo "  ------------------------------------------"
-            echo "  go.work"
+            echo "  ohm-cli       ${ohmSource}"
             echo "  ------------------------------------------"
+            echo -n "  go.work     "
             case "''${GOWORK:-}" in
               "") echo "  this checkout's, ./go.work" ;;
               off) echo "  none, GOWORK=off" ;;

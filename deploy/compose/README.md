@@ -1,6 +1,7 @@
 # The compose stack
 
 ```sh
+task compose:authkey   # the days the auth key has left; touches no tailnet
 task compose:check     # the files resolve, publish no port, need TS_DOMAIN
 task compose:build     # the two images, bff and myw; touches no tailnet
 task compose:up        # build and start, as the tailnet node protowx-<branch>
@@ -33,12 +34,18 @@ Put two lines in `.envrc.local` at the repository root, and run
 
 ```sh
 export TS_AUTHKEY=tskey-auth-...   # read at the first start only
+export TS_AUTHKEY_EXPIRE=20270127  # the key's expiry, YYYYMMDD
 export TS_DOMAIN=tail1234.ts.net   # your tailnet's domain
 ```
 
 The tailnet must have MagicDNS and HTTPS certificates on.
 [compose-tailscale.md](../../docs/devtools/compose-tailscale.md),
 section 1, makes the auth key.
+
+`TS_AUTHKEY_EXPIRE` is the date you read off the console when you make
+the key. `task compose:authkey` counts the days to it. It warns from a
+week before, and `task compose:up` refuses to start after it. Leave
+the line out and nothing is checked.
 
 ## The services
 

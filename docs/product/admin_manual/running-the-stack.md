@@ -6,6 +6,7 @@ your devices.
 
 ```sh
 # In the repository root, in the dev shell, with docker on the machine.
+task compose:authkey   # the days your auth key has left; no tailnet
 task compose:check     # the files are good; no tailnet
 task compose:build     # the two images; no tailnet
 task compose:up        # start, as the node protowx-<branch>
@@ -22,17 +23,44 @@ domain, such as `tail1234.ts.net`.
 1. Install docker on the machine. The dev shell does not have it.
 2. Make a Tailscale auth key.
    [compose-tailscale.md](../../devtools/compose-tailscale.md),
-   section 1, gives the options.
-3. Put two lines in `.envrc.local`, at the repository root:
+   section 1, gives the options. Note the expiry date the console
+   shows beside the key.
+3. Put three lines in `.envrc.local`, at the repository root:
 
    ```sh
    export TS_AUTHKEY=tskey-auth-...
+   export TS_AUTHKEY_EXPIRE=20270127
    export TS_DOMAIN=tail1234.ts.net
    ```
 
 4. Run `direnv reload`.
 
 The tailnet must have MagicDNS and HTTPS certificates on.
+
+## When the auth key expires
+
+A key lasts 90 days at most, and the key itself does not carry its
+expiry. `TS_AUTHKEY_EXPIRE`, the date you wrote in `.envrc.local`, is
+the only record of it.
+
+`task compose:authkey` reads that date and says how many days are
+left. `task compose:up` runs the same check before it builds:
+
+- **A week before the date**, both start to warn, and print the link
+  to the console.
+- **After the date**, `task compose:up` stops and starts nothing.
+
+Make a new key at
+<https://console.tailscale.com/admin/settings/keys>, put it and its
+new expiry date in `.envrc.local`, then run `direnv reload`.
+
+A node that is already on your tailnet needs no key: its identity is
+in the volume `ts-state`. To start such a node with an expired key
+still in your shell, delete the two `TS_AUTHKEY` lines and run
+`direnv reload`.
+
+Leave `TS_AUTHKEY_EXPIRE` out and nothing is checked. The task then
+says the expiry is unknown.
 
 ## What runs
 

@@ -40,6 +40,7 @@ tasks:
   up:
     desc: "Build the images and start the stack as the tailnet node protowx-<branch>; needs TS_AUTHKEY and TS_DOMAIN"
     cmds:
+      - task: authkey
       - task: disk
       # Docker makes a missing bind-mount source as root, and bff, as
       # the host's user, then fails each report with a 500. A worktree
@@ -48,6 +49,15 @@ tasks:
       - 'test -w ../../.bugreports || { echo ".bugreports is not writable by uid {{.UID}}: sudo chown {{.UID}}:{{.GID}} .bugreports" >&2; exit 1; }'
       - docker compose up --build --detach {{.CLI_ARGS}}
       - 'echo "the page: https://{{.NODE}}.${TS_DOMAIN}/"'
+
+  authkey:
+    desc: "How many days the tailnet auth key has left; it warns a week before TS_AUTHKEY_EXPIRE and refuses after it"
+    silent: true
+    # scripts/compose/authkey.sh is the check; task compose:up runs it
+    # first. No TS_AUTHKEY means nothing to check, so compose:build and
+    # the regression stack, which need no key, are unaffected.
+    cmds:
+      - ../../scripts/compose/authkey.sh
 
   build:
     desc: Build the two images, bff and myw, and start nothing

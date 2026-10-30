@@ -17,6 +17,7 @@ directory; `shots` is `screenshots/`.
 | `005-concurrent-editing` | prd |      |      |       |         |
 | `006-replay`             | prd |      |      |       |         |
 | `007-repo-setup`         | prd |      |      |       |         |
+| `008-fidel`              | prd |      |      |       |         |
 
 A new feature gets its row in the commit that creates its directory.
 

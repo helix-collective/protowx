@@ -22,22 +22,114 @@ after the tag.
 
 ## Decisions at a glance
 
-| concern                    | decision                                                               | runners-up                                 |
-|----------------------------|------------------------------------------------------------------------|--------------------------------------------|
-| what the calculator does   | **ohm-go's arithmetic example: integers, `+ - * /`, variables**        | a differential equation solver; floats     |
-| what Ohm parses            | **the expression, with `calc.ohm`, the example's grammar as it is**    | a hand-written parser                      |
-| the ADL files              | **`calc.adl` the AST, `model.adl` the record, `api.adl` the protocol** | one file                                   |
-| the record the page edits  | **`model.Calculation`: name, text, bindings, base, notes, a star**     | the AST itself as the record               |
-| where the records are kept | **in memory offline; a JSON file under `--store` connected**           | `localStorage`; SQLite                     |
-| the engine's transports    | **both, the worker and HTTP, chosen in `factory.ts` alone**            | HTTP only                                  |
-| the CRUD form              | **hand-written Solid components over `Calculation`, at first**         | adl-ui's dynamic render                    |
-| the result on the page     | **the value, and the expression fully parenthesised**                  | the value alone; a parse tree              |
-| kronk                      | **`services/myw`, My Whisper; the page dictates**                      | a language model through kronk; drop kronk |
-| the feedback report        | **the record button, the dialog, `--bugs`, `.bugreports/`**            | none                                       |
-| the traces                 | **the page's sender, `--otlp-url`, Jaeger in the stack**               | none; metrics and logs too                 |
-| the stack                  | **`bff`, `myw` and Jaeger behind one tailnet node**                    | loopback only                              |
-| tsnet in the binaries      | **none**: the tailnet is the stack's container, not `bff`'s            | tsnet in `bff`                             |
-| the manuals                | **both, with the three change logs, cut to this page**                 | a `README.md` alone                        |
+Each concern is a heading; the ticked line is the decision, and each
+unticked line is a runner-up. To change a decision, move the tick and
+say why in the section the concern cites.
+
+### what the calculator does
+
+- [x] **ohm-go's arithmetic example: integers, `+ - * /`, variables**
+      (section 1.1)
+- [ ] a differential equation solver
+- [ ] floats
+
+### what Ohm parses
+
+- [x] **the expression, with `calc.ohm`, the example's grammar as it
+      is** (section 1.2)
+- [ ] a hand-written parser
+
+### the ADL files
+
+- [x] **`calc.adl` the AST, `model.adl` the record, `api.adl` the
+      protocol** (sections 1.3, 2.1, 2.2)
+- [ ] one file
+
+### the record the page edits
+
+- [x] **`model.Calculation`: name, text, bindings, base, notes, a
+      star** (section 2.1)
+- [ ] the AST itself as the record
+
+### where the records are kept
+
+- [x] **in memory offline; a JSON file under `--store` connected**
+      (section 2.3)
+- [ ] `localStorage`
+- [ ] SQLite
+
+### the engine's transports
+
+- [x] **both, the worker and HTTP, chosen in `factory.ts` alone**
+      (section 4.1)
+- [ ] HTTP only
+
+### the CRUD form
+
+- [x] **hand-written Solid components over `Calculation`, at first**
+      (section 4.2)
+- [ ] adl-ui's dynamic render, feature 003
+
+### the result on the page
+
+- [x] **the value, and the expression fully parenthesised**
+      (section 4.2)
+- [ ] the value alone
+- [ ] a parse tree
+
+### kronk
+
+- [x] **`services/myw`, My Whisper; the page dictates** (section 5)
+- [ ] a language model through kronk
+- [ ] drop kronk
+
+### the feedback report
+
+- [x] **the record button, the dialog, `--bugs`, `.bugreports/`**
+      (section 6)
+- [ ] none
+
+### the traces
+
+- [x] **the page's sender, `--otlp-url`, Jaeger in the stack**
+      (section 7)
+- [ ] none
+- [ ] metrics and logs too
+
+### the stack
+
+- [x] **`bff`, `myw` and Jaeger behind one tailnet node** (section 8)
+- [ ] loopback only
+
+### tsnet in the binaries
+
+- [x] **none**: the tailnet is the stack's container, not `bff`'s
+      (section 8)
+- [ ] tsnet in `bff`
+
+### the manuals
+
+- [x] **both, with the three change logs, cut to this page**
+      (section 9)
+- [ ] a `README.md` alone
+
+### regression scenarios
+
+- [x] **three scenarios** (section 4.3):
+      - `crud`: a new calculation is saved, opened, renamed and
+        deleted, offline, connected and on the stack.
+      - `evaluate`: a value, an evaluation error and a parse error
+        under the text, offline and connected.
+      - `report`: a save is recorded, stopped and submitted as
+        feedback, connected; on the stack too once the traces land,
+        with the trace (section 7).
+- [ ] none
+
+### visual diff
+
+- [x] **yes.** Each scenario takes shots, and their baselines are in
+      `web/regression/scenarios/<name>.json-snapshots/`.
+- [ ] no: the scenarios check with `see` steps alone.
 
 ## 1. The calculator
 

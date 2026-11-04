@@ -48,15 +48,37 @@ feature gets its row in the commit that creates the directory. Its
 **Reader.** An engineer and a product manager, deciding together.
 
 **A page is** the argument for one thing to build. It opens with what
-it specifies, in one paragraph, then **Decisions at a glance**: a table
-of concern, decision and runners-up. Sections are numbered so the plan
-can cite them. A status paragraph near the top says what is built. Open
-decisions are listed, each with the `docs/kb/` page that analyses it.
+it specifies, in one paragraph, then **Decisions at a glance**: one
+`###` heading per concern, under it the decision as a ticked bullet,
+`- [x]`, then each runner-up as an unticked one, `- [ ]`. A reader
+changes a decision by moving the tick, and a concern may have as many
+runners-up as it needs. **A table of concern, decision and runners-up
+is not this form.** A new decision is a heading and its bullets, never
+a table row. A decision that cites a section puts the number in the
+ticked bullet, as `(section 2.3)`. Sections are numbered so the plan
+can cite them. A status paragraph near the top says what is built.
+Open decisions are listed, each with the `docs/kb/` page that analyses
+it. `001-calculator/prd.md` is the model.
 
 **Blockers come first.** A finding that must change before the work can
 start goes in `## 0. Blockers`, before Decisions at a glance: what is
 wrong, what fixes it, the command that checked it, and the date. An item
 leaves in the commit that lands it.
+
+**The checks are the last two decisions.** Decisions at a glance ends
+with two concerns, after every other, in this order:
+
+- `### regression scenarios`: the scenarios of
+  `web/regression/scenarios/` that the feature creates or changes, by
+  name, each with what its steps check. The ticked default is the
+  feature's own scenario, the `todo` that `task feature:new` writes.
+  The runner-up is none, for a feature that changes nothing on the page.
+- `### visual diff`: **yes** or **no**. Yes: the scenarios take shots,
+  and the plan takes their baselines, `task baselines -- <descr>`, and
+  commits the visual diff. No: the scenarios check with `see` steps,
+  and take no `shot`; the plan has no bullet for a baseline. The
+  default is **yes** when the prompt asked for mockups, and **no** when
+  it did not. The user moves the tick.
 
 **Voice.** STE off; the argument needs room. EF support on.
 
@@ -71,6 +93,7 @@ work", and states the tick rule. Then **Legend**, **Before starting**,
 one `## Phase N — name [sections]` per phase, each ending with
 **Done when** and **Documentation**, and **Not in any phase**. One
 bullet names one change in one file, with the file first.
+`001-calculator/plan.md` is the model.
 
 **The last phase is the screenshots.** A plan whose phases change what
 a screenshot in `docs/product/` shows ends with a phase named "the
@@ -87,10 +110,18 @@ discusses the change, and edits the grammar only once it is agreed.
 "Implement phase N" does not agree to it. The root `AGENTS.md`, "The
 grammar is the specification", holds the rule.
 
+**No visual regression unless asked.** A plan adds no bullet that
+takes a baseline, adds a `shot` step or writes a visual diff, unless
+the PRD's `visual diff` decision is yes, or the prompt asks for it. The
+one exception is a baseline that the change makes stale: the gate
+refuses it, and the root `AGENTS.md`, "Screenshots", has it taken again
+in the same commit.
+
 **A phase that changes the page names its scenario.** A phase that
 changes what the page shows names the regression scenario that it adds
 or changes, `web/regression/scenarios/<name>.json`, as a bullet of that
-phase. The scenario's first steps are the phase's **Done when**, as
+phase. The scenario is one that the PRD's `regression scenarios`
+decision names. The scenario's first steps are the phase's **Done when**, as
 clicks. `task feature:new` writes the feature's scenario as a `todo`.
 `task feature:finish` refuses a branch that changes `web/` while its
 scenario is a `todo`.
@@ -108,7 +139,9 @@ there.
 ## The other files
 
 `mockups.md` and `notes-<topic>.md` each decide nothing, and say so in
-the first paragraph. A page about this repository's own design goes
+the first paragraph.
+
+A page about this repository's own design goes
 here, not in `docs/kb/`; `kb/` takes research into external sources
 only. A file in `screenshots/` is taken at 1600 by 900 on a named
 calculation. It records the decision it was taken for, and is not

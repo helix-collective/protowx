@@ -16,7 +16,7 @@ directory; `shots` is `screenshots/`.
 | `004-report-state`       | prd |      |      |       |         |
 | `005-concurrent-editing` | prd |      |      |       |         |
 | `006-replay`             | prd |      |      |       |         |
-| `007-repo-setup`         | prd |      |      |       |         |
+| `007-repo-setup`         | prd | x    |      |       |         |
 | `008-fidel`              | prd |      |      |       |         |
 
 A new feature gets its row in the commit that creates its directory.
@@ -36,4 +36,5 @@ md-tmpl -w docs/features/README.md
 | feature                                    | open | in progress | done | total | % complete |
 |--------------------------------------------|------|-------------|------|-------|------------|
 | [001-calculator](./001-calculator/plan.md) | 6    | 3           | 102  | 111   | 92%        |
+| [007-repo-setup](./007-repo-setup/plan.md) | 0    | 3           | 21   | 24    | 88%        |
 <!--/tmpl-->

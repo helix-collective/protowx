@@ -5,6 +5,10 @@ logs: [user_manual/changelog.md](user_manual/changelog.md) for the
 user, and [admin_manual/changelog.md](admin_manual/changelog.md)
 for the admin who runs the stack.
 
+## 2026-11-12
+
+- The README tells a new person how to set up a Mac, step by step, with the fix for each problem that the first Mac hit.
+
 ## 2026-10-29
 
 - The stack warns a week before your Tailscale auth key expires, and

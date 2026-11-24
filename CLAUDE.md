@@ -14,6 +14,7 @@ agent-agnostic there; keep this file for Claude-only notes. Each module's
   finish.
 - Invoke the `regression-scenario` skill when a phase changes what the
   page shows, or when a gate prints `todo:`.
+- Invoke the `repo-setup` skill when a prompt asks to set up the repository, a new Mac or a new clone.
 - `.claude/settings.json` registers a `Stop` hook,
   `prompt-history-record`, that writes one entry per turn (and one per
   subagent) to `.prompts/history/<branch>/` in the repository the turn
